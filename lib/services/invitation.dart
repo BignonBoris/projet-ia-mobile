@@ -6,8 +6,8 @@ import 'package:projet_ia/data/error.dart';
 import 'package:projet_ia/classes/maching_guest_input.dart';
 
 class InvitationService {
-  // final String baseUrl = "https://fastapi-ia-74eo.onrender.com/groq";
-  final String baseUrl = "http://127.0.0.1:8000/matching";
+  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/matching";
+  // final String baseUrl = "http://127.0.0.1:8000/matching";
 
   Future<String> updateInvitation(
     String invitation_id,

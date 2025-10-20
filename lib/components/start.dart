@@ -8,9 +8,10 @@ class StartScreen extends StatelessWidget {
   final String? description;
   final String? btnText;
   final String? btnText2;
+  final VoidCallback? startAction2;
 
   @override
-  StartScreen({
+  const StartScreen({
     super.key,
     required this.startAction,
     this.icon = Icons.face,
@@ -18,6 +19,7 @@ class StartScreen extends StatelessWidget {
     this.description = "",
     this.btnText = "Commencer",
     this.btnText2 = "",
+    this.startAction2,
   });
 
   @override
@@ -45,16 +47,14 @@ class StartScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             Button(callAction: () => this.startAction, label: this.btnText),
+            if (this.btnText2!.isNotEmpty) const SizedBox(height: 20),
             if (this.btnText2!.isNotEmpty)
-              {
-                const SizedBox(height: 20),
-                Button(
-                  callAction: () => this.startAction,
-                  label: this.btnText,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.pinkAccent,
-                ),
-              },
+              Button(
+                callAction: () => this.startAction2,
+                label: this.btnText2,
+                backgroundColor: Colors.white,
+                textColor: Colors.pinkAccent,
+              ),
           ],
         ),
       ),

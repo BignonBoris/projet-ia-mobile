@@ -3,6 +3,7 @@ import 'package:projet_ia/screens/home.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_id_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/user_provider.dart';
 import 'providers/menu_provider.dart';
 // import 'screens/welcom_chat.dart';
 import 'package:projet_ia/screens/on_bording.dart';
@@ -21,6 +22,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserIdProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => MenuProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
         // ChangeNotifierProvider(create: (_) => UserIdProvider()..loadUserId()),
       ],
       child: MyApp(seenOnboarding: seenOnboarding),

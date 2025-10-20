@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:projet_ia/classes/user.dart';
 
 class UserService {
-  // final String baseUrl = "https://fastapi-ia-74eo.onrender.com/groq";
-  final String baseUrl = "http://127.0.0.1:8000/groq";
+  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/groq";
+  // final String baseUrl = "http://127.0.0.1:8000/groq";
   String Error500 =
       "Connexion Internet absente. Veuillez vérifier votre connexion et réessayer";
 

@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:projet_ia/data/error.dart';
 
 class ConnexionService {
-  // final String baseUrl = "https://fastapi-ia-74eo.onrender.com/groq";
-  final String baseUrl = "http://127.0.0.1:8000/matching";
+  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/matching";
+  // final String baseUrl = "http://127.0.0.1:8000/matching";
 
   Future<List<Map<String, dynamic>>> getAllUserConnexions(
     String uniqueId,

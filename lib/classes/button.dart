@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Button {
+class ButtonModel {
   final dynamic callAction;
   final String? label;
   final Color? backgroundColor;
   final Color? textColor;
 
-  // Constructeur pour initialiser les propriétés.
-  Button({
+  // Ajoutez le mot-clé 'const' au constructeur
+  const ButtonModel({
     this.callAction,
     this.label = "",
     this.backgroundColor = Colors.pinkAccent,
