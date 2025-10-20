@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:projet_ia/services/matching.dart';
+import 'package:projet_ia/services/invitation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/components/empty_list.dart';
+import 'package:projet_ia/classes/maching_guest_input.dart';
+import 'package:projet_ia/components/toast.dart';
 // import './chat.dart';
 import "package:projet_ia/components/matching/show_details.dart";
 
@@ -19,7 +21,7 @@ class MatchingListInvitationsScreen extends StatefulWidget {
 
 class _MatchingListInvitationsScreenState
     extends State<MatchingListInvitationsScreen> {
-  final IAMatchingService iaMatchingService = IAMatchingService();
+  final InvitationService invitationService = InvitationService();
 
   List<dynamic> users = [];
 
@@ -29,7 +31,8 @@ class _MatchingListInvitationsScreenState
   void init() async {
     final prefs = await SharedPreferences.getInstance();
     uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await iaMatchingService.getAllInvitations(uniqueId);
+    final response = await invitationService.getAllInvitations(uniqueId);
+    print("response init invitation");
     print(response);
     setState(() {
       users = response;
@@ -43,6 +46,30 @@ class _MatchingListInvitationsScreenState
     Future.microtask(() => init());
   }
 
+  void updateInvitation(dynamic cursor, String status) async {
+    dynamic response = await invitationService.updateInvitation(
+      cursor["invitation_id"],
+      MachingGuestInput(guest_id: cursor["guest_id"], status: status),
+    );
+
+    bool checkStatus = response.length == 36;
+
+    toastNotification(
+      context,
+      (checkStatus)
+          ? (status == "ACCEPTED")
+              ? "Invitation acceptée 💌"
+              : "Invitation rejetée 💌"
+          : "Echec d'envoie",
+    );
+
+    if (checkStatus) {
+      setState(() {
+        users.remove(cursor);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,13 +79,11 @@ class _MatchingListInvitationsScreenState
             isLoading
                 ? CircularProgressIndicator()
                 : users.length == 0
-                ? EmptyList()
+                ? EmptyList(message: "Vous n'avez aucune invitation")
                 : ListView.builder(
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final cursor = users[index];
-                    print("cursor");
-                    print(cursor);
                     final user =
                         uniqueId != cursor["user_id"]
                             ? cursor["user_info"]
@@ -84,20 +109,17 @@ class _MatchingListInvitationsScreenState
                                   Icons.cancel,
                                   color: Colors.red,
                                 ),
-                                onPressed:
-                                    () => showUserDetailModal(context, cursor),
+                                onPressed: () async {
+                                  updateInvitation(cursor, "REFUSED");
+                                },
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  color: Colors.blueAccent,
+                                  Icons.check_circle_outline,
+                                  color: Colors.greenAccent,
                                 ),
                                 onPressed: () async {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Invitation annullé 💌"),
-                                    ),
-                                  );
+                                  updateInvitation(cursor, "ACCEPTED");
                                 },
                               ),
                             ],

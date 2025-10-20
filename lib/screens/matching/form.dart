@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/components/message.dart';
 import 'package:projet_ia/components/typing.dart';
-import 'package:projet_ia/components/reloadAction.dart';
 import 'package:projet_ia/data/error.dart';
 import 'package:projet_ia/services/matching.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import './list.dart';
 
 //
 // 2️⃣ FORM SCREEN
@@ -91,81 +88,78 @@ class _MatchingFormScreenState extends State<MatchingFormScreen> {
   }
 
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(title: const Text("Vos besoins")),
-      body: Center(
-        child:
-            isLoading
-                ? const CircularProgressIndicator()
-                : Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              ...messages
-                                  .where(
-                                    (msg) =>
-                                        msg["content"] != null &&
-                                        msg["content"]!.isNotEmpty,
-                                  )
-                                  .map((msg) {
-                                    return Message(
-                                      message: msg['content']!,
-                                      role: msg['role']!,
-                                    );
-                                  })
-                                  .toList(),
-                              if (responseTyping) const TypingLoader(),
-                            ],
-                          ),
+    return Center(
+      child:
+          isLoading
+              ? const CircularProgressIndicator()
+              : Padding(
+                padding: const EdgeInsets.all(5),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ...messages
+                                .where(
+                                  (msg) =>
+                                      msg["content"] != null &&
+                                      msg["content"]!.isNotEmpty,
+                                )
+                                .map((msg) {
+                                  return Message(
+                                    message: msg['content']!,
+                                    role: msg['role']!,
+                                  );
+                                })
+                                .toList(),
+                            if (responseTyping) const TypingLoader(),
+                          ],
                         ),
                       ),
+                    ),
 
-                      // Champ d’écriture
-                      TextField(
-                        controller: _messageController,
-                        onChanged:
-                            (value) =>
-                                formattedInputText(value, _messageController),
-                        focusNode: _focusNode, // 👈 FocusNode ici
-                        onSubmitted: (value) {
-                          sendMessage(); // Appelle ta fonction d’envoi
-                        },
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.send),
-                            onPressed: sendMessage,
+                    // Champ d’écriture
+                    TextField(
+                      controller: _messageController,
+                      onChanged:
+                          (value) =>
+                              formattedInputText(value, _messageController),
+                      focusNode: _focusNode, // 👈 FocusNode ici
+                      onSubmitted: (value) {
+                        sendMessage(); // Appelle ta fonction d’envoi
+                      },
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.send),
+                          onPressed: sendMessage,
+                        ),
+                        filled: true, // Active le fond
+                        fillColor: Colors.white, // Fond blanc
+                        labelText: "Votre message",
+                        labelStyle: const TextStyle(color: Colors.pink),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.pink,
+                            width: 2,
                           ),
-                          filled: true, // Active le fond
-                          fillColor: Colors.white, // Fond blanc
-                          labelText: "Votre message",
-                          labelStyle: const TextStyle(color: Colors.pink),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.pink,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.pink,
+                            width: 2,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.pink,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-      ),
+              ),
     );
   }
 }

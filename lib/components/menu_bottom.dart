@@ -26,17 +26,17 @@ class _MenuBottomState extends State<MenuBottom> {
       unselectedItemColor: Colors.grey,
       onTap: widget.onItemTapped,
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble_outline),
-          label: "Discussion",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Rencontre"),
         BottomNavigationBarItem(
           icon: Icon(Icons.auto_stories),
           label: "Sagesse",
         ),
         // BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Mots doux"),
         // BottomNavigationBarItem(icon: Icon(Icons.quiz), label: "Quiz"),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Rencontre"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          label: "Discussion",
+        ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle_outlined),
           label: "Profil",

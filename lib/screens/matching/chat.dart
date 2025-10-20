@@ -120,6 +120,8 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
                   role:
                       message['user_id'] == widget.user_id
                           ? "user"
+                          : message['user_id'] == "system"
+                          ? "system"
                           : "assistance",
                 );
               },

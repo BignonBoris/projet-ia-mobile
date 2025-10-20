@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import "package:projet_ia/services/matching.dart";
-import 'package:projet_ia/models/maching_guest_input.dart';
+import "package:projet_ia/services/invitation.dart";
+import 'package:projet_ia/classes/maching_guest_input.dart';
 
 void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
-  final IAMatchingService iaMatchingService = IAMatchingService();
+  final InvitationService invitationService = InvitationService();
+
   final user = cursor["user"] ?? cursor;
   final matching_result = cursor["result"] ?? cursor;
+  final age = user['age'] != null ? "${user['age']} ans" : "Non renseigné";
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -56,7 +58,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user['name'] ?? "",
+                            user['name'] ?? "Non renseigné",
                             style: const TextStyle(
                               fontSize: 22,
                               color: Colors.white,
@@ -64,7 +66,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                             ),
                           ),
                           Text(
-                            "${user['age'] ?? ''} ans • ${user['city'] ?? ''}",
+                            "${age} • ${user['city'] ?? 'Non renseigné'}",
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white70,
@@ -140,7 +142,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                         String uniqueId =
                             prefs.getString('onboarding_done') ?? "";
                         // Navigator.pop(context);
-                        String invitation_id = await iaMatchingService
+                        String invitation_id = await invitationService
                             .sendInvitation(
                               uniqueId,
                               MachingGuestInput(

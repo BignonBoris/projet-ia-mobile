@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/services/matching.dart';
+import 'package:projet_ia/services/invitation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:projet_ia/models/maching_guest_input.dart';
+import 'package:projet_ia/classes/maching_guest_input.dart';
 import 'package:projet_ia/components/empty_list.dart';
+import 'package:projet_ia/components/toast.dart';
 // import './chat.dart';
 import "package:projet_ia/components/matching/show_details.dart";
 
@@ -20,6 +22,7 @@ class MatchingListMatchsScreen extends StatefulWidget {
 
 class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
   final IAMatchingService iaMatchingService = IAMatchingService();
+  final InvitationService invitationService = InvitationService();
 
   List<dynamic> users = [
     // {
@@ -38,7 +41,7 @@ class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
     final prefs = await SharedPreferences.getInstance();
     uniqueId = prefs.getString('onboarding_done') ?? "";
     final response = await iaMatchingService.searchMatching(uniqueId);
-    print("response");
+    print("response init match");
     print(response);
     setState(() {
       users = response;
@@ -68,67 +71,87 @@ class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
                     final cursor = users[index];
                     final user = cursor["user"];
                     final matching_result = cursor["result"];
-                    return Card(
-                      margin: const EdgeInsets.all(10),
-                      child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.person)),
-                        title: Text("${user['name']} - ${user['age']} ans"),
-                        subtitle: Text(
-                          "Ville : ${user['city']} • Compatibilité : ${matching_result['compatibility_score']}%",
-                        ),
+                    final age =
+                        user['age'] != null
+                            ? "${user['age']} ans"
+                            : "Non renseigné";
+                    return GestureDetector(
+                      onTap: () => showUserDetailModal(context, cursor),
+                      child: Card(
+                        margin: const EdgeInsets.all(10),
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.person),
+                          ),
+                          title: Text(
+                            "${user['name'] ?? 'Non renseigné'} - ${age}",
+                          ),
+                          subtitle: Text(
+                            "Ville : ${user['city'] ?? 'Non renseigné'} • Compatibilité : ${matching_result['compatibility_score'] ?? "0"}%",
+                          ),
 
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: Colors.blueAccent,
-                              ),
-                              onPressed:
-                                  () => showUserDetailModal(context, cursor),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.person_add_alt_outlined,
-                                color: Colors.blueAccent,
-                              ),
-                              onPressed: () async {
-                                String invitation_id = await iaMatchingService
-                                    .sendInvitation(
-                                      uniqueId,
-                                      MachingGuestInput(
-                                        guest_id: user["user_id"],
-                                        guest_resume: user["resume"],
-                                        compatibility_score:
-                                            matching_result['compatibility_score'],
-                                        reason: matching_result["reason"],
-                                        advice: matching_result["advice"],
-                                      ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // IconButton(
+                              //   icon: const Icon(
+                              //     Icons.remove_red_eye_outlined,
+                              //     color: Colors.blueAccent,
+                              //   ),
+                              //   onPressed:
+                              //       () => showUserDetailModal(context, cursor),
+                              // ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.person_add_alt_outlined,
+                                  color: Colors.blueAccent,
+                                ),
+                                onPressed: () async {
+                                  String invitation_id = await invitationService
+                                      .sendInvitation(
+                                        uniqueId,
+                                        MachingGuestInput(
+                                          guest_id: user["user_id"],
+                                          guest_resume: user["resume"],
+                                          compatibility_score:
+                                              matching_result['compatibility_score'],
+                                          reason: matching_result["reason"],
+                                          advice: matching_result["advice"],
+                                        ),
+                                      );
+                                  if (invitation_id.isNotEmpty) {
+                                    toastNotification(
+                                      context,
+                                      "Invitation envoyée 💌",
                                     );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Invitation envoyée 💌"),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                                    setState(() {
+                                      users.remove(cursor);
+                                    });
+                                  } else {
+                                    toastNotification(
+                                      context,
+                                      "Echec d'envoie d'invitation, veuiller réssayer svp",
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
 
-                        // ElevatedButton(
-                        //   onPressed: () {
-                        //     Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder:
-                        //             (context) =>
-                        //                 MatchingChatScreen(userName: user['name']),
-                        //       ),
-                        //     );
-                        //   },
-                        //   child: const Text("Discuter"),
-                        // ),
+                          // ElevatedButton(
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder:
+                          //             (context) =>
+                          //                 MatchingChatScreen(userName: user['name']),
+                          //       ),
+                          //     );
+                          //   },
+                          //   child: const Text("Discuter"),
+                          // ),
+                        ),
                       ),
                     );
                   },

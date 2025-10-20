@@ -31,7 +31,9 @@ class _MatchingListContactsScreenState
     final prefs = await SharedPreferences.getInstance();
     uniqueId = prefs.getString('onboarding_done') ?? "";
     final response = await connexionService.getAllUserConnexions(uniqueId);
+    print("response init message");
     print(response);
+
     setState(() {
       users = response;
       isLoading = false;
@@ -53,7 +55,7 @@ class _MatchingListContactsScreenState
             isLoading
                 ? CircularProgressIndicator()
                 : users.length == 0
-                ? EmptyList(message: "Vous avez aucun message")
+                ? EmptyList(message: "Vous n'avez aucun message")
                 : ListView.builder(
                   itemCount: users.length,
                   itemBuilder: (context, index) {

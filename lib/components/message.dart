@@ -22,15 +22,23 @@ class _MessageState extends State<Message> {
   Widget build(BuildContext context) {
     var settingsProvider = context.watch<SettingsProvider>();
     bool isNotUser = widget.role != "user";
+    bool isSystem = widget.role == "system";
 
     return Align(
-      alignment: isNotUser ? Alignment.centerLeft : Alignment.centerRight,
+      alignment:
+          isSystem
+              ? Alignment.center
+              : isNotUser
+              ? Alignment.centerLeft
+              : Alignment.centerRight,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
+        padding: isSystem ? const EdgeInsets.all(8) : const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color:
-              isNotUser
+              isSystem
+                  ? Colors.grey[300]
+                  : isNotUser
                   ? widget.isTyping
                       ? Colors.transparent
                       : settingsProvider.aiMessageBgColor
@@ -39,11 +47,15 @@ class _MessageState extends State<Message> {
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
             bottomLeft:
-                isNotUser
+                isSystem
+                    ? const Radius.circular(12)
+                    : isNotUser
                     ? const Radius.circular(0)
                     : const Radius.circular(12),
             bottomRight:
-                isNotUser
+                isSystem
+                    ? const Radius.circular(12)
+                    : isNotUser
                     ? const Radius.circular(12)
                     : const Radius.circular(0),
           ),
@@ -60,9 +72,11 @@ class _MessageState extends State<Message> {
                       widget.message.substring(1),
           styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
             p: TextStyle(
-              fontSize: 14,
+              fontSize: isSystem ? 10 : 14,
               color:
-                  isNotUser
+                  isSystem
+                      ? Colors.black
+                      : isNotUser
                       ? settingsProvider.aiMessageColor
                       : settingsProvider
                           .userMessageColor, // 👈 couleur choisie dans paramètres

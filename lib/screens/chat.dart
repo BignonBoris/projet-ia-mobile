@@ -6,7 +6,8 @@ import 'package:projet_ia/data/error.dart';
 import 'package:projet_ia/services/ia_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/utils.dart';
-import 'package:projet_ia/screens/start/chat.dart';
+import 'package:projet_ia/components/start.dart';
+import 'package:projet_ia/constants/texts.dart';
 
 class ChatScreen extends StatefulWidget {
   @override
@@ -128,94 +129,96 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[200], // Fond gris clair du body
-      body: Center(
-        child:
-            isLoading
-                ? const CircularProgressIndicator()
-                : Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child:
-                      messages.length == 0
-                          ? StartChatScreen(onStart: () => initMessage())
-                          : Column(
-                            children: [
-                              // Zone de messages
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  controller: _scrollController,
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      ...messages
-                                          .where(
-                                            (msg) =>
-                                                msg["content"] != null &&
-                                                msg["content"]!.isNotEmpty,
-                                          )
-                                          .map((msg) {
-                                            return Message(
-                                              message: msg['content']!,
-                                              role: msg['role']!,
-                                            );
-                                          })
-                                          .toList(),
-                                      if (responseTyping) const TypingLoader(),
-                                      if (showReloadAction)
-                                        ReloadAction(
-                                          onReloadAction: callReloadAction,
-                                        ),
-                                    ],
-                                  ),
+    final data = introTexts["coach"]!;
+    return Center(
+      child:
+          isLoading
+              ? const CircularProgressIndicator()
+              : Padding(
+                padding: const EdgeInsets.all(10.0),
+                child:
+                    messages.length == 0
+                        ? StartScreen(
+                          startAction: () => initMessage(),
+                          icon: Icons.chat_bubble_outline,
+                          title: data["title"]!,
+                          description: data["description"]!,
+                          // "Je suis ravi de t'accueillir cette espace intime d'échange ! Je suis avec votre conseillé en relation sentimental.\n Appuyez sur le bouton ci-dessous pour commencer.",
+                        )
+                        : Column(
+                          children: [
+                            // Zone de messages
+                            Expanded(
+                              child: SingleChildScrollView(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    ...messages
+                                        .where(
+                                          (msg) =>
+                                              msg["content"] != null &&
+                                              msg["content"]!.isNotEmpty,
+                                        )
+                                        .map((msg) {
+                                          return Message(
+                                            message: msg['content']!,
+                                            role: msg['role']!,
+                                          );
+                                        })
+                                        .toList(),
+                                    if (responseTyping) const TypingLoader(),
+                                    if (showReloadAction)
+                                      ReloadAction(
+                                        onReloadAction: callReloadAction,
+                                      ),
+                                  ],
                                 ),
                               ),
+                            ),
 
-                              // Champ d’écriture
-                              TextField(
-                                controller: _messageController,
-                                onChanged:
-                                    (value) => formattedInputText(
-                                      value,
-                                      _messageController,
-                                    ),
-                                focusNode: _focusNode, // 👈 FocusNode ici
-                                onSubmitted: (value) {
-                                  sendMessage(); // Appelle ta fonction d’envoi
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: IconButton(
-                                    icon: Icon(Icons.send),
-                                    onPressed: sendMessage,
+                            // Champ d’écriture
+                            TextField(
+                              controller: _messageController,
+                              onChanged:
+                                  (value) => formattedInputText(
+                                    value,
+                                    _messageController,
                                   ),
-                                  filled: true, // Active le fond
-                                  fillColor: Colors.white, // Fond blanc
-                                  labelText: "Votre message",
-                                  labelStyle: const TextStyle(
+                              focusNode: _focusNode, // 👈 FocusNode ici
+                              onSubmitted: (value) {
+                                sendMessage(); // Appelle ta fonction d’envoi
+                              },
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.send),
+                                  onPressed: sendMessage,
+                                ),
+                                filled: true, // Active le fond
+                                fillColor: Colors.white, // Fond blanc
+                                labelText: "Votre message",
+                                labelStyle: const TextStyle(color: Colors.pink),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
                                     color: Colors.pink,
+                                    width: 2,
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.pink,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.pink,
+                                    width: 2,
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.pink,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                            ],
-                          ),
-                ),
-      ),
+                            ),
+                          ],
+                        ),
+              ),
     );
   }
 }

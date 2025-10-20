@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/data/menu.dart';
 import 'package:projet_ia/components/menu_bottom.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,16 +9,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
+  List<Map<String, bool>> actions = [];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  @override
+  void init() async {
+    final prefs = await SharedPreferences.getInstance();
+    print(prefs.getBool('matching_onbording'));
+    actions = [
+      {"matching_onbording": prefs.getBool('matching_onbording') ?? true},
+      {"sagesse_onbording": prefs.getBool('sagesse_onbording') ?? true},
+    ];
+    setState(() {
+      actions = actions;
+    });
+  }
+
   void initState() {
     super.initState();
+    init();
   }
 
   @override
@@ -26,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.pink, // Couleur de fond
         title: Text(
-          menus[_selectedIndex]["title"] ?? "Nathalie",
+          menus[_selectedIndex]["title"] ?? "Coach",
           style: const TextStyle(
             color: Colors.white, // Texte rose
             fontWeight: FontWeight.bold,
@@ -34,20 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: menus[_selectedIndex]["actions"](context),
-        // [
-        //   IconButton(
-        //     icon: const Icon(Icons.refresh), // l'icône reload
-        //     onPressed: () {
-        //       print("refresh");
-        //     }, // recharge les données
-        //     tooltip: 'Recharger',
-        //   ),
-        // ],
         centerTitle: false, // Centre le texte
         iconTheme: const IconThemeData(color: Colors.white), // Icônes roses
       ),
       // drawer: const Menu(),
-      backgroundColor: Colors.grey[200], // Fond gris clair du body
+      backgroundColor: Colors.grey[100], // Fond gris clair du body
       body: menus[_selectedIndex]["widget"],
       bottomNavigationBar: MenuBottom(
         selectedIndex: _selectedIndex,

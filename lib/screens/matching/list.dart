@@ -3,7 +3,7 @@ import 'package:projet_ia/services/matching.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/screens/matching/list_screen/matchs.dart';
 import 'package:projet_ia/screens/matching/list_screen/invitations.dart';
-import 'package:projet_ia/screens/matching/list_screen/contacts.dart';
+import 'package:projet_ia/screens/matching/list_screen/messages.dart';
 
 //
 // 3️⃣ LIST SCREEN
@@ -24,21 +24,21 @@ class _MatchingListScreenState extends State<MatchingListScreen> {
   String uniqueId = "";
   bool isLoading = true;
 
-  void init() async {
-    final prefs = await SharedPreferences.getInstance();
-    uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await iaMatchingService.searchMatching(uniqueId);
-    print(response);
-    setState(() {
-      users = response;
-      isLoading = response.isNotEmpty ? false : true;
-    });
-  }
+  // void init() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   uniqueId = prefs.getString('onboarding_done') ?? "";
+  //   final response = await iaMatchingService.searchMatching(uniqueId);
+  //   print(response);
+  //   setState(() {
+  //     users = response;
+  //     isLoading = response.isNotEmpty ? false : true;
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => init());
+    // Future.microtask(() => init());
   }
 
   @override

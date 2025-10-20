@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:projet_ia/screens/matching/form.dart';
 import 'package:projet_ia/screens/matching/list.dart';
-import 'package:projet_ia/screens/matching/chat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:projet_ia/providers/menu_provider.dart';
+import 'package:projet_ia/constants/values.dart';
 import 'intro.dart';
 
 class MatchingScreen extends StatefulWidget {
@@ -13,37 +15,30 @@ class MatchingScreen extends StatefulWidget {
 }
 
 class MatchingScreenState extends State<MatchingScreen> {
-  final String FORM = "FORM";
-  final String LIST = "LIST";
-  final String CHAT = "CHAT";
-
   bool isLoading = true;
-  bool is_onbording = true;
-  String currentScreen = "FORM";
+  bool matchingOnBoardingCompleted = false;
+  String currentScreen = "";
+  MenuProvider menuProvider = MenuProvider();
 
-  void pageNavigator() {
-    print(currentScreen);
-    if (currentScreen == "FORM") {
+  void pageNavigator(BuildContext context) {
+    menuProvider = context.read<MenuProvider>();
+    menuProvider.setMatchingSelectScreen();
+    if (mounted) {
       setState(() {
-        currentScreen = "LIST";
-      });
-    } else if (currentScreen == "LIST") {
-      setState(() {
-        currentScreen = "FORM";
-      });
-    } else {
-      setState(() {
-        currentScreen = "LIST";
+        currentScreen = menuProvider.matchingScreen;
       });
     }
   }
 
   void init() async {
+    menuProvider = context.read<MenuProvider>();
     final prefs = await SharedPreferences.getInstance();
-    print(prefs.getBool('matching_onbording'));
+    print(menuProvider.matchingScreen);
     setState(() {
       isLoading = false;
-      is_onbording = prefs.getBool('matching_onbording') ?? true;
+      matchingOnBoardingCompleted =
+          prefs.getBool('matching_onboarding') ?? false;
+      currentScreen = menuProvider.matchingScreen;
     });
   }
 
@@ -58,27 +53,31 @@ class MatchingScreenState extends State<MatchingScreen> {
         : Navigator(
           key: ValueKey({
             currentScreen,
-            is_onbording,
+            matchingOnBoardingCompleted,
           }), // 👈 change à chaque valeur
           onGenerateRoute: (settings) {
-            if (is_onbording) {
+            if (currentScreen == matchingFormScreen) {
+              return MaterialPageRoute(builder: (_) => MatchingFormScreen());
+            } else if (currentScreen == matchingListScreen) {
+              return MaterialPageRoute(builder: (_) => MatchingListScreen());
+            } else if (!matchingOnBoardingCompleted) {
               return MaterialPageRoute(builder: (_) => MatchingIntroScreen());
+            } else {
+              return MaterialPageRoute(builder: (_) => MatchingFormScreen());
             }
 
-            switch (currentScreen) {
-              case "FORM":
-                return MaterialPageRoute(builder: (_) => MatchingFormScreen());
-              case "LIST":
-                return MaterialPageRoute(builder: (_) => MatchingListScreen());
-              // case "CHAT":
-              //   return MaterialPageRoute(
-              //     builder: (_) => MatchingChatScreen("userName": "Truman"),
-              //   );
-              default:
-                return MaterialPageRoute(
-                  builder: (_) => const MatchingListScreen(),
-                );
-            }
+            // switch (currentScreen) {
+            //   case matchingFormScreen:
+            //     return MaterialPageRoute(builder: (_) => MatchingFormScreen());
+            //   case matchingListScreen:
+            //     return MaterialPageRoute(builder: (_) => MatchingListScreen());
+            //   // case "CHAT":
+            //   //   return MaterialPageRoute(
+            //   //     builder: (_) => MatchingChatScreen("userName": "Truman"),
+            //   //   );
+            //   default:
+            //     return MaterialPageRoute(builder: (_) => MatchingIntroScreen());
+            // }
           },
         );
   }

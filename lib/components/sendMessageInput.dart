@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:projet_ia/components/message.dart';
-import 'package:projet_ia/components/typing.dart';
-import 'package:projet_ia/components/reloadAction.dart';
 import 'package:projet_ia/data/error.dart';
 import 'package:projet_ia/services/ia_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
