@@ -4,16 +4,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:projet_ia/classes/maching_guest_input.dart';
 import 'package:projet_ia/data/error.dart';
+import "package:projet_ia/constants/url.dart";
 
 class IAMatchingService {
-  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/matching";
-  // final String baseUrl = "http://127.0.0.1:8000/matching";
-
   Future<String> initMatching(String uniqueId) async {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/init/$uniqueId"),
+            Uri.parse("$apiMatching/init/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -44,11 +42,60 @@ class IAMatchingService {
     }
   }
 
-  Future<List<dynamic>> searchMatching(String uniqueId) async {
+  Future<List<Map<String, dynamic>>> getMatchingMessages(
+    String uniqueId,
+  ) async {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/search/$uniqueId"),
+            Uri.parse("$apiMatching/messages/$uniqueId"),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 20));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        return data.map<Map<String, dynamic>>((item) {
+          return Map<String, dynamic>.from(item);
+        }).toList();
+
+        // final data = jsonDecode(response.body);
+        // return data.map((item) {
+        //   final map = Map<String, dynamic>.from(item);
+        //   return map.map((key, value) => MapEntry(key, value.toString()));
+        // }).toList();
+      } else {
+        print("Erreur API IA: ${response.body}");
+        throw Exception("Erreur API IA: ${response.body}");
+      }
+    } on TimeoutException catch (_) {
+      print("⏱️ La requête a expiré");
+      return [];
+      // throw Exception("La connexion à l'API a expiré.");
+    } on SocketException {
+      print(
+        "Impossible de se connecter à l'API. Vérifie ta connexion Internet.",
+      );
+      return [];
+    } catch (e) {
+      print(e.toString());
+      return [];
+      // return [
+      //   {"Erreur": e.toString()},
+      // ];
+    }
+  }
+
+  Future<List<dynamic>> searchMatching(
+    String uniqueId, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$apiMatching/search/$uniqueId/$page/$limit"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -90,7 +137,7 @@ class IAMatchingService {
     try {
       final response = await http
           .post(
-            Uri.parse("$baseUrl/message/$uniqueId"),
+            Uri.parse("$apiMatching/message/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({"message": message}), // Map<String, dynamic> ici
           )
@@ -124,7 +171,7 @@ class IAMatchingService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/open-matching/$uniqueId"),
+            Uri.parse("$apiMatching/open-matching/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -163,7 +210,7 @@ class IAMatchingService {
     try {
       final response = await http
           .post(
-            Uri.parse("$baseUrl/answer/$uniqueId"),
+            Uri.parse("$apiMatching/answer/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({"message": message}), // Map<String, dynamic> ici
           )
@@ -197,7 +244,7 @@ class IAMatchingService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/sagesse/$uniqueId"),
+            Uri.parse("$apiMatching/sagesse/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -232,7 +279,7 @@ class IAMatchingService {
     try {
       final response = await http
           .get(
-            Uri.parse('$baseUrl/sms/$uniqueId'),
+            Uri.parse('$apiMatching/sms/$uniqueId'),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -266,7 +313,7 @@ class IAMatchingService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/test/reload/$uniqueId"),
+            Uri.parse("$apiMatching/test/reload/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));

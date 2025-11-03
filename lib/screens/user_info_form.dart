@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:projet_ia/classes/user.dart';
 import 'package:projet_ia/screens/home.dart';
-import 'package:projet_ia/services/users_service.dart';
+import 'package:projet_ia/services/users.dart';
 import 'package:provider/provider.dart';
 import 'package:projet_ia/providers/user_id_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +38,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
     });
 
     final response = await userService.createUser(
-      new User(name: name, age: age, sexe: gender),
+      new UserModel(name: name, age: age, sexe: gender),
     );
 
     print(response);

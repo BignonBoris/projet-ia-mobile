@@ -23,7 +23,7 @@ class _MatchingFormScreenState extends State<MatchingFormScreen> {
   String uniqueId = "";
 
   // Liste des messages
-  List<Map<String, String>> messages = [];
+  List<Map<String, dynamic>> messages = [];
   bool showReloadAction = false;
   bool isLoading = true;
   bool responseTyping = false;
@@ -31,11 +31,21 @@ class _MatchingFormScreenState extends State<MatchingFormScreen> {
   void init() async {
     final prefs = await SharedPreferences.getInstance();
     uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await iaMatchingService.initMatching(uniqueId);
-    setState(() {
-      messages.add({"role": "assistant", "content": response});
-      isLoading = response.isNotEmpty ? false : true;
-    });
+    final matchingMessage = await iaMatchingService.getMatchingMessages(
+      uniqueId,
+    );
+    if (matchingMessage.length == 0) {
+      final response = await iaMatchingService.initMatching(uniqueId);
+      setState(() {
+        messages.add({"role": "assistant", "content": response});
+        isLoading = response.isNotEmpty ? false : true;
+      });
+    } else {
+      setState(() {
+        messages = matchingMessage;
+        isLoading = false;
+      });
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });

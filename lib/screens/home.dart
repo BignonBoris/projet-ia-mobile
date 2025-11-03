@@ -2,15 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:projet_ia/data/menu.dart';
 import 'package:projet_ia/components/menu_bottom.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import "package:projet_ia/services/users.dart";
+import "package:projet_ia/providers/user_provider.dart";
+import "package:projet_ia/classes/user.dart";
+// import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import "package:projet_ia/screens/profile/menu.dart";
 
 class HomeScreen extends StatefulWidget {
+  int selectedIndex = 2;
+
+  HomeScreen({super.key, this.selectedIndex = 2});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 2;
-  List<Map<String, bool>> actions = [];
+  late int _selectedIndex;
+  UserService userService = UserService();
+  UserProvider userProvider = UserProvider();
+  UserModel? user;
+  String _message = "Aucune notification reçue";
+  String? userId = "";
 
   void _onItemTapped(int index) {
     setState(() {
@@ -19,20 +33,64 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void init() async {
-    final prefs = await SharedPreferences.getInstance();
-    print(prefs.getBool('matching_onbording'));
-    actions = [
-      {"matching_onbording": prefs.getBool('matching_onbording') ?? true},
-      {"sagesse_onbording": prefs.getBool('sagesse_onbording') ?? true},
-    ];
     setState(() {
-      actions = actions;
+      _selectedIndex = widget.selectedIndex;
     });
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('onboarding_done');
+    print({userId});
+    if (userId!.length == 36) {
+      user = await userService.getUser(userId!);
+      print({user});
+      if (user != null) {
+        await userProvider.setUserToProvider(user);
+        _initFCM();
+      }
+    }
   }
 
   void initState() {
     super.initState();
     init();
+  }
+
+  Future<void> _initFCM() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Demande la permission à l'utilisateur
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false, // true = silencieux (pas de popup)
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text("🔔 Notifications autorisées")),
+      // );
+      print("🔔 Notifications autorisées");
+      final prefs = await SharedPreferences.getInstance();
+      // Récupère le token du mobile
+      String? token = await messaging.getToken();
+      await prefs.setString('fcmToken', token ?? "");
+      // user = await userService.getUser(userId!);
+      print({token});
+      user!.fcmToken = token;
+
+      userProvider.setUserToProvider(user);
+
+      await userService.updateUser(userId!, user!);
+    }
+
+    // Gestion des notifications reçues en foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("📨 Message reçu en foreground: ${message.notification?.title}");
+      setState(() {
+        _message =
+            "Message reçu : ${message.notification?.title} - ${message.notification?.body}";
+      });
+    });
   }
 
   @override
@@ -55,6 +113,10 @@ class _HomeScreenState extends State<HomeScreen> {
       // drawer: const Menu(),
       backgroundColor: Colors.grey[100], // Fond gris clair du body
       body: menus[_selectedIndex]["widget"],
+      // endDrawer:
+      //     _selectedIndex == 3
+      //         ? const ProfileDrawer()
+      //         : null, // ✅ ton composant réutilisé
       bottomNavigationBar: MenuBottom(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,

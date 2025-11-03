@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/screens/matching/list_screen/matchs.dart';
 import 'package:projet_ia/screens/matching/list_screen/invitations.dart';
 import 'package:projet_ia/screens/matching/list_screen/messages.dart';
+import "package:projet_ia/constants/values.dart";
+import "package:projet_ia/services/connexion.dart";
 
 //
 // 3️⃣ LIST SCREEN
@@ -16,29 +18,37 @@ class MatchingListScreen extends StatefulWidget {
   State<MatchingListScreen> createState() => _MatchingListScreenState();
 }
 
-class _MatchingListScreenState extends State<MatchingListScreen> {
+class _MatchingListScreenState extends State<MatchingListScreen>
+    with SingleTickerProviderStateMixin {
   final IAMatchingService iaMatchingService = IAMatchingService();
+  late TabController _tabController;
 
-  List<dynamic> users = [];
+  List<Map<String, dynamic>> connexions = [];
 
   String uniqueId = "";
   bool isLoading = true;
 
-  // void init() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   uniqueId = prefs.getString('onboarding_done') ?? "";
-  //   final response = await iaMatchingService.searchMatching(uniqueId);
-  //   print(response);
-  //   setState(() {
-  //     users = response;
-  //     isLoading = response.isNotEmpty ? false : true;
-  //   });
-  // }
+  void init() async {
+    final String? userId = await getPrefUserId();
+    connexions = await ConnexionService().getAllUserConnexions(userId!);
+    setState(() {
+      connexions = connexions;
+      isLoading = false;
+      _tabController.index = connexions.isEmpty ? 2 : 0;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    // Future.microtask(() => init());
+    _tabController = TabController(length: 3, vsync: this); // valeur par défaut
+    Future.microtask(() => init());
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,8 +60,9 @@ class _MatchingListScreenState extends State<MatchingListScreen> {
           preferredSize: const Size.fromHeight(48), // hauteur de la TabBar
           child: Container(
             color: Colors.pinkAccent, // couleur de fond
-            child: const SafeArea(
+            child: SafeArea(
               child: TabBar(
+                controller: _tabController,
                 indicatorColor: Colors.white,
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.white70,
@@ -64,7 +75,8 @@ class _MatchingListScreenState extends State<MatchingListScreen> {
             ),
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
+          controller: _tabController,
           children: [
             MatchingListContactsScreen(),
             MatchingListInvitationsScreen(),

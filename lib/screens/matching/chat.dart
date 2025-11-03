@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:projet_ia/classes/user.dart';
+import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:projet_ia/services/connexion.dart';
+import 'package:projet_ia/services/notification.dart';
 import 'package:projet_ia/components/message.dart';
+import 'package:projet_ia/constants/url.dart';
+import "package:projet_ia/classes/notification.dart";
+import "package:projet_ia/providers/user_provider.dart";
 
 //
 // 4️⃣ CHAT SCREEN
@@ -25,19 +32,22 @@ class MatchingChatScreen extends StatefulWidget {
 class _MatchingChatScreenState extends State<MatchingChatScreen> {
   late IO.Socket socket;
   final ConnexionService connexionService = ConnexionService();
+  final NotificationService notificationService = NotificationService();
   // final List<String> messages = ["Salut 👋", "Comment vas-tu ?"];
   List<dynamic> messages = [];
   final TextEditingController controller = TextEditingController();
+  UserProvider userProvider = UserProvider();
 
   void initState() {
     super.initState();
     _connectSocket();
     messages = widget.connexion["messages"];
+    print(widget.connexion["messages"]);
   }
 
   void _connectSocket() {
     socket = IO.io(
-      'http://localhost:8000', // 👉 remplace par ton URL socket (ex: http://192.168.x.x:8000)
+      baseUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
@@ -76,24 +86,23 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
       message = message[0].toUpperCase() + message.substring(1);
 
       dynamic data = {
+        "user_id": widget.user_id,
         "message": message,
         "connexion_id": widget.connexion["connexion_id"],
       };
-      socket.emit("client_to_server", data);
 
       setState(() {
         messages.add({"user_id": widget.user_id, "message": message});
       });
+      controller.clear();
 
-      final response = await connexionService.sendMessage(
+      socket.emit("client_to_server", data);
+
+      await connexionService.sendMessage(
         widget.connexion["connexion_id"],
         widget.user_id,
         message,
       );
-
-      print(response);
-
-      controller.clear();
     }
   }
 
@@ -103,10 +112,76 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
     super.dispose();
   }
 
+  void _startVideoCall(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ZegoUIKitPrebuiltCall(
+              appID: 1977886184, // 🧠 ton AppID Zego
+              appSign:
+                  "42d0d6b58922da0110ec158e17cfa9e3e8e0e072ace8e8842a017ce6111e3aaa", // 🧠 ton AppSign Zego
+              userID: "currentUserId",
+              userName: "currentUserId",
+              callID: _getCallId("currentUserId", "otherUserId"),
+              config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+            ),
+      ),
+    );
+  }
+
+  void _startAudioCall(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ZegoUIKitPrebuiltCall(
+              appID: 1977886184,
+              appSign:
+                  "42d0d6b58922da0110ec158e17cfa9e3e8e0e072ace8e8842a017ce6111e3aaa",
+              userID: "currentUserId",
+              userName: "currentUserId",
+              callID: _getCallId("currentUserId", "otherUserId"),
+              config: ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall(),
+            ),
+      ),
+    );
+  }
+
+  String _getCallId(String a, String b) {
+    final ids = [a, b]..sort();
+    return ids.join('_');
+  }
+
   @override
   Widget build(BuildContext context) {
+    userProvider = context.watch<UserProvider>();
+
     return Scaffold(
-      appBar: AppBar(title: Text("Chat avec ${widget.user["name"]}")),
+      appBar: AppBar(
+        title: Container(
+          child: Row(
+            children: [
+              CircleAvatar(child: Icon(Icons.person)),
+              SizedBox(width: 10),
+              Text(
+                "${widget.user["pseudo"]}",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.videocam),
+            onPressed: () => _startVideoCall(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () => _startAudioCall(context),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -134,11 +209,10 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: controller,
-
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
                         icon: Icon(Icons.send),
-                        onPressed: sendMessage,
+                        onPressed: () => sendMessage(),
                       ),
                       filled: true, // Active le fond
                       fillColor: Colors.white, // Fond blanc

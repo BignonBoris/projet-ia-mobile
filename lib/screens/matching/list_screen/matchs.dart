@@ -7,6 +7,9 @@ import 'package:projet_ia/components/empty_list.dart';
 import 'package:projet_ia/components/toast.dart';
 // import './chat.dart';
 import "package:projet_ia/components/matching/show_details.dart";
+import "package:projet_ia/utils.dart";
+import "package:projet_ia/components/matching/userItem.dart";
+import "package:projet_ia/constants/values.dart";
 
 //
 // 3️⃣ LIST SCREEN
@@ -23,28 +26,35 @@ class MatchingListMatchsScreen extends StatefulWidget {
 class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
   final IAMatchingService iaMatchingService = IAMatchingService();
   final InvitationService invitationService = InvitationService();
+  final ScrollController _scrollController = ScrollController();
+  int _page = 1;
+  final int _limit = 100; // nombre d’éléments par page
+  bool _hasMore = true;
 
-  List<dynamic> users = [
-    // {
-    //   "user": {"name": "Alice", "age": 25, "city": "Cotonou", "match": 92},
-    //   "result": {
-    //     "compatibility_score": 50,
-    //     "reason": "Il est difficile de déterminer une",
-    //   },
-    // },
-  ];
+  List<dynamic> users = [];
 
-  String uniqueId = "";
+  String? userId = "";
   bool isLoading = true;
 
-  void init() async {
-    final prefs = await SharedPreferences.getInstance();
-    uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await iaMatchingService.searchMatching(uniqueId);
-    print("response init match");
-    print(response);
+  // Simulation d’un appel API (tu peux mettre ton API FastAPI ici)
+  Future<void> _fetchItems() async {
+    userId = await getPrefUserId();
+    final response = await iaMatchingService.searchMatching(
+      userId!,
+      page: _page,
+      limit: _limit,
+    );
+
+    // si moins que le limit → plus de data
+    if (response.length == 0) {
+      setState(() {
+        _hasMore = false;
+      });
+    }
+
     setState(() {
-      users = response;
+      users.addAll(response);
+      _page++;
       isLoading = false;
     });
   }
@@ -52,7 +62,21 @@ class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => init());
+    Future.microtask(() => _fetchItems());
+    // Détection de la fin du scroll
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 100 &&
+          _hasMore) {
+        _fetchItems();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -65,96 +89,160 @@ class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
                 ? CircularProgressIndicator()
                 : users.length == 0
                 ? EmptyList()
-                : ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final cursor = users[index];
-                    final user = cursor["user"];
-                    final matching_result = cursor["result"];
-                    final age =
-                        user['age'] != null
-                            ? "${user['age']} ans"
-                            : "Non renseigné";
-                    return GestureDetector(
-                      onTap: () => showUserDetailModal(context, cursor),
-                      child: Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person),
-                          ),
-                          title: Text(
-                            "${user['name'] ?? 'Non renseigné'} - ${age}",
-                          ),
-                          subtitle: Text(
-                            "Ville : ${user['city'] ?? 'Non renseigné'} • Compatibilité : ${matching_result['compatibility_score'] ?? "0"}%",
-                          ),
-
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // IconButton(
-                              //   icon: const Icon(
-                              //     Icons.remove_red_eye_outlined,
-                              //     color: Colors.blueAccent,
-                              //   ),
-                              //   onPressed:
-                              //       () => showUserDetailModal(context, cursor),
-                              // ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.person_add_alt_outlined,
-                                  color: Colors.blueAccent,
-                                ),
-                                onPressed: () async {
-                                  String invitation_id = await invitationService
-                                      .sendInvitation(
-                                        uniqueId,
-                                        MachingGuestInput(
-                                          guest_id: user["user_id"],
-                                          guest_resume: user["resume"],
-                                          compatibility_score:
-                                              matching_result['compatibility_score'],
-                                          reason: matching_result["reason"],
-                                          advice: matching_result["advice"],
-                                        ),
-                                      );
-                                  if (invitation_id.isNotEmpty) {
-                                    toastNotification(
-                                      context,
-                                      "Invitation envoyée 💌",
-                                    );
-                                    setState(() {
-                                      users.remove(cursor);
-                                    });
-                                  } else {
-                                    toastNotification(
-                                      context,
-                                      "Echec d'envoie d'invitation, veuiller réssayer svp",
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-
-                          // ElevatedButton(
-                          //   onPressed: () {
-                          //     Navigator.push(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //         builder:
-                          //             (context) =>
-                          //                 MatchingChatScreen(userName: user['name']),
-                          //       ),
-                          //     );
-                          //   },
-                          //   child: const Text("Discuter"),
-                          // ),
-                        ),
-                      ),
-                    );
+                : RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      users.clear();
+                      _page = 1;
+                      _hasMore = true;
+                      isLoading = true;
+                    });
+                    await _fetchItems();
                   },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: users.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index < users.length) {
+                        final cursor = users[index];
+                        final user = cursor["user"];
+                        final matching_result = cursor["result"];
+                        final age =
+                            user['dateOfBirth'] != null
+                                ? "${calculateAge(user['dateOfBirth'])} ans"
+                                : "Non renseigné";
+                        return UserItem(
+                          user: user,
+                          actions: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.person_add_alt_outlined,
+                                color: Colors.blueAccent,
+                              ),
+                              onPressed: () async {
+                                String invitation_id = await InvitationService()
+                                    .sendInvitation(
+                                      userId!,
+                                      MachingGuestInput(
+                                        guest_id: user["user_id"],
+                                        guest_resume: user["resume"],
+                                        compatibility_score:
+                                            matching_result['compatibility_score'],
+                                        reason: matching_result["reason"],
+                                        advice: matching_result["advice"],
+                                      ),
+                                    );
+                                if (invitation_id.isNotEmpty) {
+                                  toastNotification(
+                                    context,
+                                    "Invitation envoyée 💌",
+                                  );
+                                  setState(() {
+                                    users.remove(cursor);
+                                  });
+                                } else {
+                                  toastNotification(
+                                    context,
+                                    "Echec d'envoie d'invitation, veuiller réssayer svp",
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                        // GestureDetector(
+                        //   onTap: () => showUserDetailModal(context, cursor),
+                        //   child: Card(
+                        //     margin: const EdgeInsets.all(10),
+                        //     child: ListTile(
+                        //       leading: const CircleAvatar(
+                        //         child: Icon(Icons.person),
+                        //       ),
+                        //       title: Text(
+                        //         "${user['name']}",
+                        //         style: TextStyle(fontWeight: FontWeight.bold),
+                        //       ),
+                        //       subtitle: Text(
+                        //         "${age} • ${user['country'] ?? 'Non renseigné'} • ${user['sexe'] ?? 'Non renseigné'} ",
+                        //       ),
+
+                        //       // subtitle: Text(
+                        //       //   "Pays : ${user['country'] ?? 'Non renseigné'} • Compatibilité : ${matching_result['compatibility_score'] ?? "0"}%",
+                        //       // ),
+                        //       trailing: Row(
+                        //         mainAxisSize: MainAxisSize.min,
+                        //         children: [
+                        //           // IconButton(
+                        //           //   icon: const Icon(
+                        //           //     Icons.remove_red_eye_outlined,
+                        //           //     color: Colors.blueAccent,
+                        //           //   ),
+                        //           //   onPressed:
+                        //           //       () => showUserDetailModal(context, cursor),
+                        //           // ),
+                        //           IconButton(
+                        //             icon: const Icon(
+                        //               Icons.person_add_alt_outlined,
+                        //               color: Colors.blueAccent,
+                        //             ),
+                        //             onPressed: () async {
+                        //               String
+                        //               invitation_id = await invitationService
+                        //                   .sendInvitation(
+                        //                     userId,
+                        //                     MachingGuestInput(
+                        //                       guest_id: user["user_id"],
+                        //                       guest_resume: user["resume"],
+                        //                       compatibility_score:
+                        //                           matching_result['compatibility_score'],
+                        //                       reason: matching_result["reason"],
+                        //                       advice: matching_result["advice"],
+                        //                     ),
+                        //                   );
+                        //               if (invitation_id.isNotEmpty) {
+                        //                 toastNotification(
+                        //                   context,
+                        //                   "Invitation envoyée 💌",
+                        //                 );
+                        //                 setState(() {
+                        //                   users.remove(cursor);
+                        //                 });
+                        //               } else {
+                        //                 toastNotification(
+                        //                   context,
+                        //                   "Echec d'envoie d'invitation, veuiller réssayer svp",
+                        //                 );
+                        //               }
+                        //             },
+                        //           ),
+                        //         ],
+                        //       ),
+
+                        //       // ElevatedButton(
+                        //       //   onPressed: () {
+                        //       //     Navigator.push(
+                        //       //       context,
+                        //       //       MaterialPageRoute(
+                        //       //         builder:
+                        //       //             (context) =>
+                        //       //                 MatchingChatScreen(userName: user['name']),
+                        //       //       ),
+                        //       //     );
+                        //       //   },
+                        //       //   child: const Text("Discuter"),
+                        //       // ),
+                        //     ),
+                        //   ),
+                        // );
+                      } else {
+                        // Loader à la fin
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                    },
+                  ),
                 ),
       ),
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/services/connexion.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/components/empty_list.dart';
 import 'package:projet_ia/screens/matching/chat.dart';
 import 'package:projet_ia/components/unread_message.dart';
+import "package:projet_ia/constants/values.dart";
 // import './chat.dart';
 
 //
@@ -25,12 +25,11 @@ class _MatchingListContactsScreenState
   List<dynamic> users = [];
 
   String uniqueId = "";
-  bool isLoading = false;
+  bool isLoading = true;
 
   void init() async {
-    final prefs = await SharedPreferences.getInstance();
-    uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await connexionService.getAllUserConnexions(uniqueId);
+    final String? userId = await getPrefUserId();
+    final response = await connexionService.getAllUserConnexions(userId!);
     print("response init message");
     print(response);
 
@@ -48,75 +47,73 @@ class _MatchingListContactsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(title: const Text("Vos matchs")),
-      body: Center(
-        child:
-            isLoading
-                ? CircularProgressIndicator()
-                : users.length == 0
-                ? EmptyList(message: "Vous n'avez aucun message")
-                : ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final cursor = users[index];
-                    String lastMessage =
-                        cursor["messages"].isNotEmpty
-                            ? cursor["messages"][cursor["messages"].length -
-                                1]["message"]
-                            : "";
-                    final user =
-                        cursor["user_id"] == uniqueId
-                            ? cursor["guest_info"]
-                            : cursor["user_info"];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => MatchingChatScreen(
-                                  connexion: cursor,
-                                  user: user,
-                                  user_id: uniqueId,
-                                ),
-                          ),
-                        );
-                      },
-                      child: Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person),
-                          ),
-                          title: Text("${user['name']} "),
-                          subtitle: Text(
-                            lastMessage,
-                            maxLines: 1, // Limite le texte à une seule ligne
-                            overflow:
-                                TextOverflow
-                                    .ellipsis, // Affiche des points de suspension si le texte dépasse
-                          ),
-
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Center(
-                                child: IconButton(
-                                  onPressed: () {
-                                    // Aller à la page de messages
-                                  },
-                                  icon: SimpleBadge(count: 4),
-                                ),
+    return Center(
+      child:
+          isLoading
+              ? CircularProgressIndicator()
+              : users.length == 0
+              ? EmptyList(message: "Vous n'avez aucun message")
+              : ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final cursor = users[index];
+                  String lastMessage =
+                      cursor["messages"].isNotEmpty
+                          ? cursor["messages"][cursor["messages"].length -
+                              1]["message"]
+                          : "";
+                  final user =
+                      cursor["user_id"] == uniqueId
+                          ? cursor["guest_info"]
+                          : cursor["user_info"];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => MatchingChatScreen(
+                                connexion: cursor,
+                                user: user,
+                                user_id: uniqueId,
                               ),
-                            ],
-                          ),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        leading: const CircleAvatar(child: Icon(Icons.person)),
+                        title: Text(
+                          "${user['pseudo']}",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          lastMessage,
+                          maxLines: 1, // Limite le texte à une seule ligne
+                          overflow:
+                              TextOverflow
+                                  .ellipsis, // Affiche des points de suspension si le texte dépasse
+                        ),
+
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Center(
+                              child: IconButton(
+                                onPressed: () {
+                                  // Aller à la page de messages
+                                },
+                                icon: SimpleBadge(count: 4),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-      ),
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

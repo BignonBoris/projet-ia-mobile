@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/providers/user_provider.dart';
+import "package:projet_ia/services/auth.dart";
+import "package:projet_ia/classes/auth.dart";
+import "package:projet_ia/screens/home.dart";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,10 +14,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  AuthService authService = AuthService();
+  Map<String, dynamic>? user;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void _login() {
+  void _login(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
@@ -24,13 +31,33 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Simule une authentification
-    context.read<UserProvider>().updateUser({
-      "email": email,
-      "pseudo": email.split("@").first,
-    });
+    user = await authService.login(
+      AuthInputModel(password: password, email: email),
+    );
 
-    Navigator.pushReplacementNamed(context, '/home');
+    if (user != null) {
+      // Simule une authentification
+      context.read<UserProvider>().updateUser({
+        "email": user!["email"],
+        "pseudo": user!["pseudo"],
+        "country": user!["country"],
+        "occupation": user!["occupation"],
+        "phone": user!["phone"],
+        "sexe": user!["sexe"],
+        "dateOfBirth": user!["dateOfBirth"],
+        // "email": email,
+        // "pseudo": email.split("@").first,
+      });
+
+      await prefs.setString('onboarding_done', user!["user_id"]);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen(selectedIndex: 2)),
+      );
+
+      // Navigator.pushReplacementNamed(context, '/home');
+    } else {}
   }
 
   @override
@@ -67,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: () => _login(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink,
                     padding: const EdgeInsets.symmetric(

@@ -29,12 +29,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool responseTyping = false;
 
   void getMessages() async {
-    // final String uniqueId = context.read<UserIdProvider>().userId;
-
     final prefs = await SharedPreferences.getInstance();
     uniqueId = prefs.getString('onboarding_done') ?? "";
 
-    print("uniqueId = $uniqueId");
     final response = await iaService.getUserMessages(uniqueId);
     print("Réponse API : $response"); // 👈 log dans la console
     setState(() {
@@ -81,7 +78,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void sendMessage() async {
-    // final String uniqueId = context.read<UserIdProvider>().userId;
     final message = _messageController.text;
     setState(() {
       messages.add({"role": "user", "content": message});

@@ -4,11 +4,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:projet_ia/data/error.dart';
 import 'package:projet_ia/classes/maching_guest_input.dart';
+import "package:projet_ia/constants/url.dart";
 
 class InvitationService {
-  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/matching";
-  // final String baseUrl = "http://127.0.0.1:8000/matching";
-
   Future<String> updateInvitation(
     String invitation_id,
     MachingGuestInput data,
@@ -17,7 +15,7 @@ class InvitationService {
     try {
       final response = await http
           .put(
-            Uri.parse("$baseUrl/invitation/$invitation_id"),
+            Uri.parse("$apiMatching/invitation/$invitation_id"),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(data.toJson()), // Map<String, dynamic> ici
           )
@@ -51,7 +49,7 @@ class InvitationService {
     try {
       final response = await http
           .post(
-            Uri.parse("$baseUrl/invitation/$uniqueId"),
+            Uri.parse("$apiMatching/invitation/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               "guest_id": data.guest_id,
@@ -91,7 +89,7 @@ class InvitationService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/invitations/$uniqueId"),
+            Uri.parse("$apiMatching/invitations/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));

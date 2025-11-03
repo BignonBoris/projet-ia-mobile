@@ -3,13 +3,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import "package:projet_ia/services/invitation.dart";
 import 'package:projet_ia/classes/maching_guest_input.dart';
+import "package:projet_ia/utils.dart";
 
 void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
   final InvitationService invitationService = InvitationService();
 
   final user = cursor["user"] ?? cursor;
   final matching_result = cursor["result"] ?? cursor;
-  final age = user['age'] != null ? "${user['age']} ans" : "Non renseigné";
+  final age =
+      user['dateOfBirth'] != null
+          ? "${calculateAge(user['dateOfBirth'])} ans"
+          : "Non renseigné";
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -58,7 +62,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user['name'] ?? "Non renseigné",
+                            "${user['pseudo'] ?? 'Non renseigné'} • ${age}",
                             style: const TextStyle(
                               fontSize: 22,
                               color: Colors.white,
@@ -66,7 +70,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                             ),
                           ),
                           Text(
-                            "${age} • ${user['city'] ?? 'Non renseigné'}",
+                            "${user['country'] ?? 'Non renseigné'}  • ${user['occupation']}",
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white70,

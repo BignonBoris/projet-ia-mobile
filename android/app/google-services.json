@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1057982567529",
+    "firebase_url": "https://helper-92613.firebaseio.com",
+    "project_id": "helper-92613",
+    "storage_bucket": "helper-92613.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057982567529:android:7dc46f38b3f32fc8aa3ef8",
+        "android_client_info": {
+          "package_name": "com.bignon.helper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq872QoXPx3fPwC73zjAHD-6SzSAhr84Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057982567529:android:7867bbfe2d3620f5aa3ef8",
+        "android_client_info": {
+          "package_name": "com.example.projet_ia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq872QoXPx3fPwC73zjAHD-6SzSAhr84Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

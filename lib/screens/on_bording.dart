@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:projet_ia/services/users_service.dart';
+import 'package:projet_ia/services/users.dart';
 import 'package:projet_ia/providers/user_id_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:projet_ia/classes/user.dart';
 import 'package:projet_ia/screens/home.dart';
-import 'package:projet_ia/screens/user_info_form.dart'; // 👈 ton écran formulaire
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -37,19 +36,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void createUser() async {
-    var userProvider = context.read<UserIdProvider>();
+    // var userProvider = context.read<UserIdProvider>();
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
       isLoading = true;
     });
 
-    final response = await userService.createUser(new User.empty());
+    final response = await userService.createUser(new UserModel.empty());
 
     print(response);
 
     if (response.length == 36) {
-      userProvider.setUserId(response);
+      // UserIdProvider().setUserId(response);
 
       await prefs.setString('onboarding_done', response);
 

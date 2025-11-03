@@ -63,7 +63,7 @@ class MatchingScreenState extends State<MatchingScreen> {
             } else if (!matchingOnBoardingCompleted) {
               return MaterialPageRoute(builder: (_) => MatchingIntroScreen());
             } else {
-              return MaterialPageRoute(builder: (_) => MatchingFormScreen());
+              return MaterialPageRoute(builder: (_) => MatchingListScreen());
             }
 
             // switch (currentScreen) {

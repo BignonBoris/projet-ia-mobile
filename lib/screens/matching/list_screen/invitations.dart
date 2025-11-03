@@ -6,6 +6,8 @@ import 'package:projet_ia/classes/maching_guest_input.dart';
 import 'package:projet_ia/components/toast.dart';
 // import './chat.dart';
 import "package:projet_ia/components/matching/show_details.dart";
+import "package:projet_ia/utils.dart";
+import "package:projet_ia/components/matching/userItem.dart";
 
 //
 // 3️⃣ LIST SCREEN
@@ -88,59 +90,84 @@ class _MatchingListInvitationsScreenState
                         uniqueId != cursor["user_id"]
                             ? cursor["user_info"]
                             : cursor["guest_info"];
-                    return GestureDetector(
-                      onTap: () => showUserDetailModal(context, cursor),
-                      child: Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person),
-                          ),
-                          title: Text("${user['name']} - ${user['age']} ans"),
-                          subtitle: Text(
-                            "Ville : ${user['city']} • Compatibilité : ${cursor['compatibility_score']}%",
-                          ),
-
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.cancel,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () async {
-                                  updateInvitation(cursor, "REFUSED");
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.greenAccent,
-                                ),
-                                onPressed: () async {
-                                  updateInvitation(cursor, "ACCEPTED");
-                                },
-                              ),
-                            ],
-                          ),
-
-                          // ElevatedButton(
-                          //   onPressed: () {
-                          //     Navigator.push(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //         builder:
-                          //             (context) =>
-                          //                 MatchingChatScreen(userName: user['name']),
-                          //       ),
-                          //     );
-                          //   },
-                          //   child: const Text("Discuter"),
-                          // ),
+                    return UserItem(
+                      user: user,
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.cancel, color: Colors.red),
+                          onPressed: () async {
+                            updateInvitation(cursor, "REFUSED");
+                          },
                         ),
-                      ),
+
+                        uniqueId == cursor["guest_info"]
+                            ? IconButton(
+                              icon: const Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.greenAccent,
+                              ),
+                              onPressed: () async {
+                                updateInvitation(cursor, "ACCEPTED");
+                              },
+                            )
+                            : Text(""),
+                      ],
                     );
+                    // GestureDetector(
+                    //   onTap: () => showUserDetailModal(context, cursor),
+                    //   child: Card(
+                    //     margin: const EdgeInsets.all(10),
+                    //     child: ListTile(
+                    //       leading: const CircleAvatar(
+                    //         child: Icon(Icons.person),
+                    //       ),
+                    //       title: Text(
+                    //         "${user['pseudo']} - ${calculateAge(user['dateOfBirth'])} ans",
+                    //       ),
+                    //       subtitle: Text(
+                    //         "${user['country']} • ${user['sexe']} • Compatibilité : ${cursor['compatibility_score']}%",
+                    //       ),
+
+                    //       trailing: Row(
+                    //         mainAxisSize: MainAxisSize.min,
+                    //         children: [
+                    //           IconButton(
+                    //             icon: const Icon(
+                    //               Icons.cancel,
+                    //               color: Colors.red,
+                    //             ),
+                    //             onPressed: () async {
+                    //               updateInvitation(cursor, "REFUSED");
+                    //             },
+                    //           ),
+                    //           IconButton(
+                    //             icon: const Icon(
+                    //               Icons.check_circle_outline,
+                    //               color: Colors.greenAccent,
+                    //             ),
+                    //             onPressed: () async {
+                    //               updateInvitation(cursor, "ACCEPTED");
+                    //             },
+                    //           ),
+                    //         ],
+                    //       ),
+
+                    //       // ElevatedButton(
+                    //       //   onPressed: () {
+                    //       //     Navigator.push(
+                    //       //       context,
+                    //       //       MaterialPageRoute(
+                    //       //         builder:
+                    //       //             (context) =>
+                    //       //                 MatchingChatScreen(userName: user['name']),
+                    //       //       ),
+                    //       //     );
+                    //       //   },
+                    //       //   child: const Text("Discuter"),
+                    //       // ),
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
       ),

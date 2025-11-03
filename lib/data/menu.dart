@@ -9,6 +9,9 @@ import 'package:projet_ia/screens/matching/matching_index.dart';
 import 'package:projet_ia/providers/menu_provider.dart';
 import 'package:projet_ia/screens/matching/list.dart';
 import "package:projet_ia/constants/values.dart";
+import "package:projet_ia/screens/profile/popup_menu.dart";
+
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 final GlobalKey<SagesseScreenState> sagesseKey =
     GlobalKey<SagesseScreenState>();
@@ -18,10 +21,39 @@ final GlobalKey<MatchingScreenState> matchingKey =
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+final GlobalKey<ProfilScreenState> profilKey = GlobalKey<ProfilScreenState>();
+
 // var menuProvider = (BuildContext context) => context.watch<MenuProvider>();
 
 // Liste des pages
 final List<Map<String, dynamic>> menus = [
+  {
+    "title": "Discussion",
+    "widget": ChatScreen(),
+    "actions": (BuildContext context) => <Widget>[],
+  },
+  {
+    "title": "Sagesse",
+    "widget": SagesseScreen(key: sagesseKey),
+    "actions": (BuildContext context) {
+      final menuProvider = context.watch<MenuProvider>();
+      menuProvider.loadSagesseOnboardingStatus();
+      List<Widget> subActions = [];
+      if (menuProvider.sagesseOnboardingCompleted) {
+        subActions.add(
+          IconButton(
+            icon: const Icon(Icons.refresh), // l'icône reload
+            onPressed:
+                () => {
+                  sagesseKey.currentState?.nextSagesse(),
+                }, // recharge les données
+            tooltip: 'Recharger',
+          ),
+        );
+      }
+      return subActions;
+    },
+  },
   {
     "title": "Rencontre",
     "widget": MatchingScreen(key: matchingKey),
@@ -46,38 +78,21 @@ final List<Map<String, dynamic>> menus = [
       return subActions;
     },
   },
-
-  {
-    "title": "Sagesse",
-    "widget": SagesseScreen(key: sagesseKey),
-    "actions": (BuildContext context) {
-      final menuProvider = context.watch<MenuProvider>();
-      menuProvider.loadSagesseOnboardingStatus();
-      List<Widget> subActions = [];
-      if (menuProvider.sagesseOnboardingCompleted) {
-        subActions.add(
-          IconButton(
-            icon: const Icon(Icons.refresh), // l'icône reload
-            onPressed:
-                () => {
-                  sagesseKey.currentState?.nextSagesse(),
-                }, // recharge les données
-            tooltip: 'Recharger',
-          ),
-        );
-      }
-      return subActions;
-    },
-  },
-  {
-    "title": "Discussion",
-    "widget": ChatScreen(),
-    "actions": (BuildContext context) => <Widget>[],
-  },
   {
     "title": "Profil",
-    "widget": ProfilScreen(),
-    "actions": (BuildContext context) => <Widget>[],
+    "widget": ProfilScreen(key: profilKey),
+    "actions": (BuildContext context) {
+      final menuProvider = context.watch<MenuProvider>();
+      menuProvider.loadMatchingOnboardingStatus();
+      List<Widget> subActions = [
+        ProfilePopupMenu(
+          // onSelected: (value) => _handleMenuSelection(context, value),
+          onSelected:
+              (value) => profilKey.currentState?.changeScreen(screen: value),
+        ),
+      ];
+      return subActions;
+    },
   },
   {
     "title": "Paramètres",

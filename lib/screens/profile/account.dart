@@ -1,9 +1,19 @@
-import 'dart:io';
+import "dart:io";
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:country_picker/country_picker.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:projet_ia/providers/user_provider.dart';
-import "package:projet_ia/screens/profile/login.dart";
+import "package:projet_ia/components/form/text.dart";
+import "package:projet_ia/components/form/country.dart";
+import "package:projet_ia/components/form/phone.dart";
+import 'package:projet_ia/components/form/date2.dart';
+import "package:projet_ia/components/form/select.dart";
+import "package:projet_ia/services/users.dart";
+import "package:projet_ia/classes/user.dart";
+import "package:projet_ia/constants/values.dart";
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -14,37 +24,98 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _pseudoController = TextEditingController(
+    text: "",
+  );
+  late TextEditingController _occupationController = TextEditingController(
+    text: "",
+  );
+  late TextEditingController _emailController = TextEditingController(text: "");
+  late TextEditingController _passwordController = TextEditingController(
+    text: "",
+  );
+
+  UserProvider userProvider = UserProvider();
+  UserService userService = UserService();
+
+  String pseudo = '';
+  String? selectedCountry = "";
+  String? phoneNumber = '';
+  String? dateOfBirth = '';
+  // DateTime? dateOfBirth;
+  String? selectedGenre = "Homme";
+  String email = '';
+  String password = '';
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
-  bool _isEditing = false;
 
-  late TextEditingController _pseudoController;
-  late TextEditingController _paysController;
-  late TextEditingController _phoneController;
-  late TextEditingController _birthController;
-  late TextEditingController _genreController;
-  late TextEditingController _professionController;
-  late TextEditingController _emailController;
+  final ImageProvider defaultAvatar = const AssetImage('assets/avatar.png');
+  ImageProvider? userAvatar;
+  bool isLoading = true;
+  String? userId = "";
+  String profileImagePath = "";
+
+  void getUserInformation() async {
+    userProvider = context.read<UserProvider>();
+    userId = await getPrefUserId();
+    if (userProvider.pseudo == "") {
+      UserModel? userData = await UserService().getUser(userId!);
+      if (userData != null) {
+        final data = userData.toJson();
+        userProvider.updateUser(data);
+      }
+    }
+    _pseudoController = TextEditingController(text: userProvider.pseudo);
+    _emailController = TextEditingController(text: userProvider.email);
+    _passwordController = TextEditingController(text: userProvider.password);
+    _occupationController = TextEditingController(
+      text: userProvider.occupation,
+    );
+    setState(() {
+      selectedCountry = userProvider.country;
+      phoneNumber = userProvider.phone;
+      selectedGenre = userProvider.sexe;
+      dateOfBirth = userProvider.dateOfBirth;
+      isLoading = false;
+      // profileImagePath = userProvider.profileImagePath!;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    final user = context.read<UserProvider>();
-    _pseudoController = TextEditingController(text: user.pseudo);
-    _paysController = TextEditingController(text: user.pays);
-    _phoneController = TextEditingController(text: user.phone);
-    _birthController = TextEditingController(text: user.birth);
-    _genreController = TextEditingController(text: user.genre);
-    _professionController = TextEditingController(text: user.profession);
-    _emailController = TextEditingController(text: user.email);
+    getUserInformation();
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() => _imageFile = File(pickedFile.path));
-      context.read<UserProvider>().updateProfileImage(pickedFile.path);
-    }
+  Future<void> updateUserInformation() async {
+    // UserProvider user
+    // if (_isEditing && _formKey.currentState!.validate()) {
+    UserModel userModel = UserModel(
+      pseudo: _pseudoController.text,
+      country: selectedCountry,
+      phone: phoneNumber,
+      dateOfBirth: dateOfBirth,
+      sexe: selectedGenre,
+      occupation: _occupationController.text,
+      email: _emailController.text,
+    );
+
+    String response = await userService.updateUser(userId!, userModel);
+
+    userProvider.updateUser({
+      "pseudo": _pseudoController.text,
+      "country": selectedCountry ?? "",
+      "phone": phoneNumber ?? "",
+      "dateOfBirth": dateOfBirth ?? "",
+      "sexe": selectedGenre ?? "",
+      "occupation": _occupationController.text,
+      "email": _emailController.text,
+    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Profil mis à jour ✅")));
+    // }
+    // setState(() => _isEditing = !_isEditing);
   }
 
   void _openPasswordModal(BuildContext context) {
@@ -133,209 +204,218 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() => _imageFile = File(pickedFile.path));
+      await UserService().uploadProfileImage(userId!, pickedFile);
+      context.read<UserProvider>().updateProfileImage(pickedFile.path);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<UserProvider>();
+    // userProvider = context.watch<UserProvider>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Mon Profil"),
-        actions: [
-          IconButton(
-            icon: Icon(_isEditing ? Icons.save : Icons.edit),
-            tooltip: _isEditing ? "Enregistrer" : "Modifier",
-            onPressed: () {
-              if (_isEditing && _formKey.currentState!.validate()) {
-                user.updateUser({
-                  "pseudo": _pseudoController.text,
-                  "pays": _paysController.text,
-                  "phone": _phoneController.text,
-                  "birth": _birthController.text,
-                  "genre": _genreController.text,
-                  "profession": _professionController.text,
-                  "email": _emailController.text,
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Profil mis à jour ✅")),
-                );
-              }
-              setState(() => _isEditing = !_isEditing);
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // 👤 Photo de profil
-              Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 55,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage:
-                          _imageFile != null
-                              ? FileImage(_imageFile!)
-                              : (user.profileImagePath != null
-                                  ? FileImage(File(user.profileImagePath!))
-                                  : const AssetImage(
-                                        "assets/default_avatar.png",
-                                      )
-                                      as ImageProvider),
-                    ),
-                    if (_isEditing)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.pinkAccent,
+    return Container(
+      child:
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 📸 Photo de profil
+                      Center(
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              // backgroundImage: userAvatar,
+                              backgroundImage:
+                                  _imageFile != null
+                                      ? FileImage(_imageFile!)
+                                      : profileImagePath.isNotEmpty
+                                      ? NetworkImage(profileImagePath)
+                                      : (userProvider.profileImagePath != null
+                                          ? FileImage(
+                                            File(
+                                              userProvider.profileImagePath!,
+                                            ),
+                                          )
+                                          : const AssetImage(
+                                                "assets/default_avatar.png",
+                                              )
+                                              as ImageProvider),
+
+                              // profileImagePath.isNotEmpty
+                              //     ? NetworkImage(profileImagePath)
+                              //     : _imageFile != null
+                              //     ? FileImage(_imageFile!)
+                              //     : (userProvider.profileImagePath != null
+                              //         ? FileImage(
+                              //           File(
+                              //             userProvider.profileImagePath!,
+                              //           ),
+                              //         )
+                              //         : const AssetImage(
+                              //               "assets/default_avatar.png",
+                              //             )
+                              //             as ImageProvider),
                             ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                            Positioned(
+                              bottom: 0,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: _pickImage,
+                                // onTap: () {
+                                //   // TODO: ajouter image picker
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     const SnackBar(
+                                //       content: Text(
+                                //         "Changement de photo à venir...",
+                                //       ),
+                                //     ),
+                                //   );
+                                // },
+                                child: const CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Colors.pinkAccent,
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+
+                      _sectionTitle("Informations personnelles"),
+
+                      const SizedBox(height: 5),
+                      TextInput(
+                        controller: _pseudoController,
+                        label: "Nom d'utilisateur (obligatoire)",
+                      ),
+                      const SizedBox(height: 5),
+                      CountryInput(
+                        defaultCountry: selectedCountry,
+                        getCountry:
+                            (Country value) => {
+                              setState(() => selectedCountry = value.name),
+                            },
+                      ),
+
+                      PhoneInput(
+                        defaultPhone: phoneNumber,
+                        getPhone:
+                            (PhoneNumber value) => {
+                              setState(() => phoneNumber = value.phoneNumber),
+                            },
+                      ),
+
+                      DateInput(
+                        defaultDate: dateOfBirth,
+                        getDate:
+                            (DateTime? value) => {
+                              setState(() => dateOfBirth = value.toString()),
+                            },
+                      ),
+                      const SizedBox(height: 5),
+
+                      SelectInput(
+                        defaultValue: selectedGenre,
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Homme',
+                            child: Text('Homme'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Femme',
+                            child: Text('Femme'),
+                          ),
+                        ],
+                        getOption:
+                            (value) => {
+                              print(value),
+                              setState(() => selectedGenre = value),
+                            },
+                      ),
+
+                      const SizedBox(height: 10),
+                      TextInput(
+                        controller: _occupationController,
+                        label: "Profession",
+                      ),
+                      const SizedBox(height: 5),
+
+                      _sectionTitle("Informations de connexion"),
+
+                      const SizedBox(height: 10),
+                      TextInput(controller: _emailController, label: "Email"),
+                      const SizedBox(height: 16),
+                      // TextInput(
+                      //   controller: _passwordController,
+                      //   label: "Mot de passe",
+                      //   isPassword: true,
+                      // ),
+                      ListTile(
+                        title: const Text("Mot de passe"),
+                        subtitle: const Text("********"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.lock),
+                          tooltip: "Modifier le mot de passe",
+                          onPressed: () => _openPasswordModal(context),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () => updateUserInformation(),
+                          // {
+                          //   // if (_formKey.currentState!.validate()) {
+                          //   // userProvider.updateUser(
+                          //   //   pseudo: pseudo,
+                          //   //   country: selectedCountry,
+                          //   //   phone: phoneNumber,
+                          //   //   birth: dateOfBirth,
+                          //   //   sexe: selectedGenre,
+                          //   //   email: email,
+                          //   // );
+                          //   // }
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     const SnackBar(content: Text('Profil mis à jour ✅')),
+                          //   );
+                          // },
+                          icon: const Icon(Icons.save),
+                          label: Text(
+                            "${userProvider.pseudo == '' ? 'Créer un compte' : 'Enregistrer les modifications'}",
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pinkAccent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
                       ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                user.pseudo,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 25),
-
-              _sectionTitle("Informations personnelles"),
-              _buildTextField("Pseudo", _pseudoController),
-              _buildTextField("Pays", _paysController),
-              _buildTextField("Téléphone", _phoneController),
-              _buildTextField("Date de naissance", _birthController),
-              _buildTextField("Genre", _genreController),
-              _buildTextField("Profession", _professionController),
-
-              const SizedBox(height: 25),
-
-              _sectionTitle("Informations de connexion"),
-              _buildTextField(
-                "Adresse e-mail",
-                _emailController,
-                keyboard: TextInputType.emailAddress,
-              ),
-
-              ListTile(
-                title: const Text("Mot de passe"),
-                subtitle: const Text("********"),
-                trailing: IconButton(
-                  icon: const Icon(Icons.lock),
-                  tooltip: "Modifier le mot de passe",
-                  onPressed: () => _openPasswordModal(context),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text("Déconnexion"),
-                            content: const Text(
-                              "Souhaitez-vous vraiment vous déconnecter ?",
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text("Annuler"),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text("Oui, déconnecter"),
-                              ),
-                            ],
-                          ),
-                    );
-
-                    if (confirm == true) {
-                      await context.read<UserProvider>().clearUser();
-
-                      // Redirection vers l’écran de login
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (route) => false,
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: const Text(
-                    "Se déconnecter",
-                    style: TextStyle(color: Colors.white),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool obscure = false,
-    TextInputType keyboard = TextInputType.text,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        controller: controller,
-        enabled: _isEditing,
-        obscureText: obscure,
-        keyboardType: keyboard,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          suffixIcon: _isEditing ? const Icon(Icons.edit, size: 18) : null,
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Veuillez remplir ce champ";
-          }
-          return null;
-        },
-      ),
     );
   }
 

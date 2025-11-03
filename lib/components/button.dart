@@ -20,7 +20,7 @@ class Button extends StatelessWidget {
     return ElevatedButton(
       onPressed: this.callAction(), // callback fourni par le parent
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         backgroundColor: this.backgroundColor,
         // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

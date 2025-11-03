@@ -3,16 +3,14 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:projet_ia/data/error.dart';
+import "package:projet_ia/constants/url.dart";
 
 class IAService {
-  final String baseUrl = "https://fastapi-ia-74eo.onrender.com/groq";
-  // final String baseUrl = "http://127.0.0.1:8000/groq";
-
   Future<List<Map<String, String>>> getUserMessages(String uniqueId) async {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/messages/$uniqueId"),
+            Uri.parse("$apiGroq/messages/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -51,7 +49,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/messages/init/$uniqueId"),
+            Uri.parse("$apiGroq/messages/init/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -90,7 +88,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/overview/$uniqueId"),
+            Uri.parse("$apiGroq/overview/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -129,7 +127,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/sagesses/init/$uniqueId"),
+            Uri.parse("$apiGroq/sagesses/init/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -162,7 +160,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/sagesses/$uniqueId"),
+            Uri.parse("$apiGroq/sagesses/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -195,7 +193,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/sagesses/new/$uniqueId"),
+            Uri.parse("$apiGroq/sagesses/new/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -228,7 +226,7 @@ class IAService {
     try {
       final response = await http
           .post(
-            Uri.parse("$baseUrl/messages/add/$uniqueId"),
+            Uri.parse("$apiGroq/messages/add/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({"message": message}), // Map<String, dynamic> ici
           )
@@ -262,7 +260,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/sagesses/$uniqueId"),
+            Uri.parse("$apiGroq/sagesses/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -297,7 +295,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse('$baseUrl/sms/$uniqueId'),
+            Uri.parse('$apiGroq/sms/$uniqueId'),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -331,7 +329,7 @@ class IAService {
     try {
       final response = await http
           .get(
-            Uri.parse("$baseUrl/test/reload/$uniqueId"),
+            Uri.parse("$apiGroq/test/reload/$uniqueId"),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));

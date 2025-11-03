@@ -6,20 +6,46 @@ class MenuProvider with ChangeNotifier {
   bool _menuMatchingActionSearchMatching = false;
   bool _sagesseOnboardingCompleted = false;
   bool _matchingOnboardingCompleted = false;
+  bool _profilOnboardingCompleted = false;
   String _matchingScreen = "";
+  String _profilScreen = "";
 
   bool get menuMatchingActionSearchMatching =>
       _menuMatchingActionSearchMatching;
 
   bool get sagesseOnboardingCompleted => _sagesseOnboardingCompleted;
   bool get matchingOnboardingCompleted => _matchingOnboardingCompleted;
+  bool get profilOnboardingCompleted => _profilOnboardingCompleted;
   String get matchingScreen => _matchingScreen;
+  String get profilScreen => _profilScreen;
 
   void setMatchingSelectScreen() {
     _matchingScreen =
-        _matchingScreen == matchingFormScreen
-            ? matchingListScreen
-            : matchingFormScreen;
+        _matchingScreen == matchingListScreen
+            ? matchingFormScreen
+            : matchingListScreen;
+  }
+
+  void setProfilSelectScreen({String screen = ""}) {
+    _profilScreen =
+        screen != ""
+            ? screen
+            : _profilScreen == profilAccountScreen
+            ? profilLoginScreen
+            : profilAccountScreen;
+  }
+
+  Future<void> loadProfilOnboardingStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    _profilOnboardingCompleted = prefs.getBool('profil_onboarding') ?? false;
+    notifyListeners(); // Informe les widgets que l'état a changé
+  }
+
+  Future<void> completeProfilOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('profil_onboarding', true);
+    _profilOnboardingCompleted = true;
+    notifyListeners(); // Informe les widgets que l'état a changé
   }
 
   void setMenuMatchingActionSearchMatching(String activeScreen) {
