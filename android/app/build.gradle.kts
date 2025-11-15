@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.projet_ia"
-        minSdk = 23 // ✅ Firebase nécessite minSdk ≥ 23
+        minSdk = flutter.minSdkVersion // ✅ Firebase nécessite minSdk ≥ 23
         targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -31,6 +31,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false  // Désactive R8
+            isShrinkResources = false
+            // signingConfig = signingConfigs.getByName("release")
             // tu pourras plus tard définir ta propre clé ici
         }
     }

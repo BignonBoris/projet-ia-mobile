@@ -34,7 +34,9 @@ class UserProvider with ChangeNotifier {
 
   String get userId => _userId;
 
-  void setUserId(String id) {
+  void setUserId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('onboarding_done', id);
     _userId = id;
     notifyListeners();
   }
@@ -104,6 +106,7 @@ class UserProvider with ChangeNotifier {
   Future<void> clearUser() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_data');
+    // await prefs.remove("onboarding_done");
     pseudo =
         country =
             phone = dateOfBirth = sexe = occupation = email = password = "";

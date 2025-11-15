@@ -11,3 +11,15 @@ Future<String?> getPrefUserId() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('onboarding_done');
 }
+
+Future<String?> getStringPref(String value) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString(value);
+}
+
+Future<bool?> getBoolPref(String value) async {
+  final prefs = await SharedPreferences.getInstance();
+  print("value = $value");
+  print("value = ${prefs.getBool(value)}");
+  return prefs.getBool(value);
+}

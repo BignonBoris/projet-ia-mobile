@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
+import "package:projet_ia/components/form/input_decoration.dart";
 
 class CountryInput extends StatefulWidget {
   final Function getCountry;
@@ -44,13 +45,14 @@ class _CountryInputState extends State<CountryInput> {
         onTap: _pickCountry,
         child: AbsorbPointer(
           child: TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Pays (obligatoire)',
-              isDense: true,
-              hintText: selectedCountry ?? 'Choisir un pays',
-              border: const OutlineInputBorder(),
-              suffixIcon: const Icon(Icons.arrow_drop_down),
-            ),
+            decoration: MyInputDecoration("Pays (obligatoire)"),
+            // decoration: InputDecoration(
+            //   labelText: 'Pays (obligatoire)',
+            //   isDense: true,
+            //   hintText: selectedCountry ?? 'Choisir un pays',
+            //   border: const OutlineInputBorder(),
+            //   suffixIcon: const Icon(Icons.arrow_drop_down),
+            // ),
             // controller: widget.controller,
             controller: TextEditingController(text: selectedCountry ?? ''),
           ),

@@ -61,20 +61,20 @@ final List<Map<String, dynamic>> menus = [
       final menuProvider = context.watch<MenuProvider>();
       menuProvider.loadMatchingOnboardingStatus();
       List<Widget> subActions = [];
-      if (menuProvider.matchingOnboardingCompleted) {
-        subActions.add(
-          IconButton(
-            icon:
-                menuProvider.matchingScreen == matchingFormScreen
-                    ? const Icon(Icons.people)
-                    : const Icon(Icons.ac_unit),
-            onPressed: () async {
-              matchingKey.currentState?.pageNavigator(context);
-            },
-            tooltip: 'Voir mes match',
-          ),
-        );
-      }
+      // if (menuProvider.matchingOnboardingCompleted) {
+      //   subActions.add(
+      //     IconButton(
+      //       icon:
+      //           menuProvider.matchingScreen == matchingFormScreen
+      //               ? const Icon(Icons.people)
+      //               : const Icon(Icons.ac_unit),
+      //       onPressed: () async {
+      //         matchingKey.currentState?.pageNavigator(context);
+      //       },
+      //       tooltip: 'Voir mes match',
+      //     ),
+      //   );
+      // }
       return subActions;
     },
   },

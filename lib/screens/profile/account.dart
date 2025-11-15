@@ -98,6 +98,7 @@ class _AccountScreenState extends State<AccountScreen> {
       sexe: selectedGenre,
       occupation: _occupationController.text,
       email: _emailController.text,
+      password: _passwordController.text,
     );
 
     String response = await userService.updateUser(userId!, userModel);
@@ -232,40 +233,47 @@ class _AccountScreenState extends State<AccountScreen> {
                       Center(
                         child: Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 50,
-                              // backgroundImage: userAvatar,
-                              backgroundImage:
-                                  _imageFile != null
-                                      ? FileImage(_imageFile!)
-                                      : profileImagePath.isNotEmpty
-                                      ? NetworkImage(profileImagePath)
-                                      : (userProvider.profileImagePath != null
-                                          ? FileImage(
-                                            File(
-                                              userProvider.profileImagePath!,
-                                            ),
-                                          )
-                                          : const AssetImage(
-                                                "assets/default_avatar.png",
+                            profileImagePath == "" || profileImagePath.isEmpty
+                                ? const CircleAvatar(
+                                  radius: 50,
+                                  child: Icon(Icons.person),
+                                )
+                                : CircleAvatar(
+                                  radius: 50,
+                                  // backgroundImage: userAvatar,
+                                  backgroundImage:
+                                      _imageFile != null
+                                          ? FileImage(_imageFile!)
+                                          : profileImagePath.isNotEmpty
+                                          ? NetworkImage(profileImagePath)
+                                          : (userProvider.profileImagePath !=
+                                                  null
+                                              ? FileImage(
+                                                File(
+                                                  userProvider
+                                                      .profileImagePath!,
+                                                ),
                                               )
-                                              as ImageProvider),
+                                              : const AssetImage(
+                                                    "assets/default_avatar.png",
+                                                  )
+                                                  as ImageProvider),
 
-                              // profileImagePath.isNotEmpty
-                              //     ? NetworkImage(profileImagePath)
-                              //     : _imageFile != null
-                              //     ? FileImage(_imageFile!)
-                              //     : (userProvider.profileImagePath != null
-                              //         ? FileImage(
-                              //           File(
-                              //             userProvider.profileImagePath!,
-                              //           ),
-                              //         )
-                              //         : const AssetImage(
-                              //               "assets/default_avatar.png",
-                              //             )
-                              //             as ImageProvider),
-                            ),
+                                  // profileImagePath.isNotEmpty
+                                  //     ? NetworkImage(profileImagePath)
+                                  //     : _imageFile != null
+                                  //     ? FileImage(_imageFile!)
+                                  //     : (userProvider.profileImagePath != null
+                                  //         ? FileImage(
+                                  //           File(
+                                  //             userProvider.profileImagePath!,
+                                  //           ),
+                                  //         )
+                                  //         : const AssetImage(
+                                  //               "assets/default_avatar.png",
+                                  //             )
+                                  //             as ImageProvider),
+                                ),
                             Positioned(
                               bottom: 0,
                               right: 4,
@@ -297,84 +305,140 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 15),
 
-                      _sectionTitle("Informations personnelles"),
+                      // --- Section 1 : Informations personnelles
+                      Card(
+                        color: Colors.white,
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.person, color: Colors.blue),
+                                  SizedBox(width: 8),
+                                  _sectionTitle("Informations personnelles"),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              TextInput(
+                                controller: _pseudoController,
+                                label: "Nom d'utilisateur (obligatoire)",
+                              ),
+                              const SizedBox(height: 5),
+                              CountryInput(
+                                defaultCountry: selectedCountry,
+                                getCountry:
+                                    (Country value) => {
+                                      setState(
+                                        () => selectedCountry = value.name,
+                                      ),
+                                    },
+                              ),
+                              PhoneInput(
+                                defaultPhone: phoneNumber,
+                                getPhone:
+                                    (PhoneNumber value) => {
+                                      setState(
+                                        () => phoneNumber = value.phoneNumber,
+                                      ),
+                                    },
+                              ),
 
-                      const SizedBox(height: 5),
-                      TextInput(
-                        controller: _pseudoController,
-                        label: "Nom d'utilisateur (obligatoire)",
-                      ),
-                      const SizedBox(height: 5),
-                      CountryInput(
-                        defaultCountry: selectedCountry,
-                        getCountry:
-                            (Country value) => {
-                              setState(() => selectedCountry = value.name),
-                            },
-                      ),
+                              DateInput(
+                                defaultDate: dateOfBirth,
+                                getDate:
+                                    (DateTime? value) => {
+                                      setState(
+                                        () => dateOfBirth = value.toString(),
+                                      ),
+                                    },
+                              ),
+                              const SizedBox(height: 5),
 
-                      PhoneInput(
-                        defaultPhone: phoneNumber,
-                        getPhone:
-                            (PhoneNumber value) => {
-                              setState(() => phoneNumber = value.phoneNumber),
-                            },
-                      ),
+                              SelectInput(
+                                defaultValue: selectedGenre,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Homme',
+                                    child: Text('Homme'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Femme',
+                                    child: Text('Femme'),
+                                  ),
+                                ],
+                                getOption:
+                                    (value) => {
+                                      print(value),
+                                      setState(() => selectedGenre = value),
+                                    },
+                              ),
 
-                      DateInput(
-                        defaultDate: dateOfBirth,
-                        getDate:
-                            (DateTime? value) => {
-                              setState(() => dateOfBirth = value.toString()),
-                            },
-                      ),
-                      const SizedBox(height: 5),
-
-                      SelectInput(
-                        defaultValue: selectedGenre,
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Homme',
-                            child: Text('Homme'),
+                              const SizedBox(height: 10),
+                              TextInput(
+                                controller: _occupationController,
+                                label: "Profession",
+                              ),
+                              const SizedBox(height: 5),
+                            ],
                           ),
-                          DropdownMenuItem(
-                            value: 'Femme',
-                            child: Text('Femme'),
-                          ),
-                        ],
-                        getOption:
-                            (value) => {
-                              print(value),
-                              setState(() => selectedGenre = value),
-                            },
-                      ),
-
-                      const SizedBox(height: 10),
-                      TextInput(
-                        controller: _occupationController,
-                        label: "Profession",
-                      ),
-                      const SizedBox(height: 5),
-
-                      _sectionTitle("Informations de connexion"),
-
-                      const SizedBox(height: 10),
-                      TextInput(controller: _emailController, label: "Email"),
-                      const SizedBox(height: 16),
-                      // TextInput(
-                      //   controller: _passwordController,
-                      //   label: "Mot de passe",
-                      //   isPassword: true,
-                      // ),
-                      ListTile(
-                        title: const Text("Mot de passe"),
-                        subtitle: const Text("********"),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.lock),
-                          tooltip: "Modifier le mot de passe",
-                          onPressed: () => _openPasswordModal(context),
                         ),
                       ),
+
+                      const SizedBox(height: 20),
+
+                      // --- Section 2 : Informations de connexion
+                      Card(
+                        color: Colors.white,
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.lock, color: Colors.green),
+                                  SizedBox(width: 8),
+                                  _sectionTitle("Informations de connexion"),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              TextInput(
+                                controller: _emailController,
+                                label: "Email",
+                              ),
+                              const SizedBox(height: 16),
+                              (userProvider.password == "")
+                                  ? TextInput(
+                                    controller: _passwordController,
+                                    label: "Mot de passe",
+                                    isPassword: true,
+                                  )
+                                  : ListTile(
+                                    title: const Text("Mot de passe"),
+                                    subtitle: const Text("********"),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.lock),
+                                      tooltip: "Modifier le mot de passe",
+                                      onPressed:
+                                          () => _openPasswordModal(context),
+                                    ),
+                                  ),
+                              const SizedBox(height: 30),
+                            ],
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(height: 30),
 
                       Center(

@@ -8,6 +8,7 @@ import 'package:projet_ia/components/toast.dart';
 import "package:projet_ia/components/matching/show_details.dart";
 import "package:projet_ia/utils.dart";
 import "package:projet_ia/components/matching/userItem.dart";
+import "package:projet_ia/constants/values.dart";
 
 //
 // 3️⃣ LIST SCREEN
@@ -27,13 +28,12 @@ class _MatchingListInvitationsScreenState
 
   List<dynamic> users = [];
 
-  String uniqueId = "";
+  String? userId = "";
   bool isLoading = true;
 
   void init() async {
-    final prefs = await SharedPreferences.getInstance();
-    uniqueId = prefs.getString('onboarding_done') ?? "";
-    final response = await invitationService.getAllInvitations(uniqueId);
+    userId = await getPrefUserId();
+    final response = await invitationService.getAllInvitations(userId!);
     print("response init invitation");
     print(response);
     setState(() {
@@ -87,9 +87,9 @@ class _MatchingListInvitationsScreenState
                   itemBuilder: (context, index) {
                     final cursor = users[index];
                     final user =
-                        uniqueId != cursor["user_id"]
-                            ? cursor["user_info"]
-                            : cursor["guest_info"];
+                        cursor["user_id"] == userId
+                            ? cursor["guest_info"]
+                            : cursor["user_info"];
                     return UserItem(
                       user: user,
                       actions: [
@@ -100,7 +100,7 @@ class _MatchingListInvitationsScreenState
                           },
                         ),
 
-                        uniqueId == cursor["guest_info"]
+                        userId == cursor["guest_info"]
                             ? IconButton(
                               icon: const Icon(
                                 Icons.check_circle_outline,

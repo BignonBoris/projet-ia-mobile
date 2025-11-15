@@ -10,11 +10,12 @@ import 'package:projet_ia/utils.dart';
 // 2️⃣ FORM SCREEN
 //
 class MatchingFormScreen extends StatefulWidget {
+  const MatchingFormScreen({super.key});
   @override
-  State<MatchingFormScreen> createState() => _MatchingFormScreenState();
+  State<MatchingFormScreen> createState() => MatchingFormScreenState();
 }
 
-class _MatchingFormScreenState extends State<MatchingFormScreen> {
+class MatchingFormScreenState extends State<MatchingFormScreen> {
   final IAMatchingService iaMatchingService = IAMatchingService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();

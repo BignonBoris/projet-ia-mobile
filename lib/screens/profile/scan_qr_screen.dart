@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import "package:projet_ia/services/connexion.dart";
 import "package:projet_ia/classes/connexion.dart";
 import 'package:shared_preferences/shared_preferences.dart';
+import "package:projet_ia/screens/home.dart";
 
 class ScanQRScreen extends StatefulWidget {
   const ScanQRScreen({super.key});
@@ -32,17 +31,17 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   }
 
   Future<void> _sendDataToApi(String scannedData) async {
-    String response = await connexionService.createConnexion(
+    String response = await connexionService.createConnexionByScanner(
       ConnexionInputModel(guest_id: scannedData, user_id: userId),
     );
-    print(response);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("✅ Scan réussi")));
-    if (response.length > 0) {
+    if (response.length == 36) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("✅ connexion créer avec succès")));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen(selectedIndex: 2)),
+      );
     } else {
       ScaffoldMessenger.of(
         context,

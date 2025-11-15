@@ -115,4 +115,36 @@ class ConnexionService {
       return "Erreur: $e";
     }
   }
+
+  Future<String> createConnexionByScanner(
+    ConnexionInputModel connexionInputData,
+  ) async {
+    try {
+      final response = await Api.post(
+        "$apiConnexion/scanner",
+        jsonEncode({
+          "user_id": connexionInputData.user_id,
+          "guest_id": connexionInputData.guest_id,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        return data?.toString() ?? "";
+      } else {
+        throw Exception("Erreur API IA: ${response.body}");
+      }
+    } on TimeoutException catch (_) {
+      print("⏱️ La requête a expiré");
+      return Error500;
+      // throw Exception("La connexion à l'API a expiré.");
+    } on SocketException {
+      print(
+        "Impossible de se connecter à l'API. Vérifie ta connexion Internet.",
+      );
+      return Error500;
+    } catch (e) {
+      return "Erreur: $e";
+    }
+  }
 }

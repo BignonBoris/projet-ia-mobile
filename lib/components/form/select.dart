@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:projet_ia/components/form/input_decoration.dart";
 
 class SelectInput extends StatefulWidget {
   final List<DropdownMenuItem<String>>? items;
@@ -35,11 +36,12 @@ class _SelectInputState extends State<SelectInput> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: DropdownButtonFormField<String>(
         value: selectedValue,
-        decoration: const InputDecoration(
-          labelText: 'Genre',
-          isDense: true,
-          border: OutlineInputBorder(),
-        ),
+        decoration: MyInputDecoration("Pays (obligatoire"),
+        // decoration: const InputDecoration(
+        //   labelText: 'Genre',
+        //   isDense: true,
+        //   border: OutlineInputBorder(),
+        // ),
         items: widget.items,
         onChanged:
             (value) => {

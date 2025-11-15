@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:projet_ia/services/connexion.dart';
 import 'package:projet_ia/components/empty_list.dart';
 import 'package:projet_ia/screens/matching/chat.dart';
 import 'package:projet_ia/components/unread_message.dart';
 import "package:projet_ia/constants/values.dart";
+// import 'package:projet_ia/constants/url.dart';
+import 'package:projet_ia/providers/connexion_provider.dart';
 // import './chat.dart';
 
 //
@@ -20,19 +24,21 @@ class MatchingListContactsScreen extends StatefulWidget {
 
 class _MatchingListContactsScreenState
     extends State<MatchingListContactsScreen> {
+  late IO.Socket socket;
   final ConnexionService connexionService = ConnexionService();
 
   List<dynamic> users = [];
 
-  String uniqueId = "";
+  String? userId = "";
   bool isLoading = true;
 
   void init() async {
-    final String? userId = await getPrefUserId();
-    final response = await connexionService.getAllUserConnexions(userId!);
-    print("response init message");
-    print(response);
-
+    final connexionProvider = context.read<ConnexionProvider>();
+    List<dynamic> response = [];
+    userId = await getPrefUserId();
+    print("pref = $userId");
+    response = await connexionService.getAllUserConnexions(userId!);
+    connexionProvider.setConnexions(response);
     setState(() {
       users = response;
       isLoading = false;
@@ -47,11 +53,13 @@ class _MatchingListContactsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final connexionProvider = context.watch<ConnexionProvider>();
+
     return Center(
       child:
           isLoading
               ? CircularProgressIndicator()
-              : users.length == 0
+              : connexionProvider.connexions.length == 0
               ? EmptyList(message: "Vous n'avez aucun message")
               : ListView.builder(
                 itemCount: users.length,
@@ -63,9 +71,21 @@ class _MatchingListContactsScreenState
                               1]["message"]
                           : "";
                   final user =
-                      cursor["user_id"] == uniqueId
+                      cursor["user_id"] == userId
                           ? cursor["guest_info"]
                           : cursor["user_info"];
+
+                  final profileImagePath =
+                      user["profileImagePath"] != null
+                          ? user["profileImagePath"]
+                          : user["imageProfile"] != null
+                          ? user["imageProfile"]
+                          : user["user_info"] != null &&
+                              user["user_info"]![0] != null &&
+                              user["user_info"]![0]!["imageProfile"] != null
+                          ? user["user_info"]![0]!["imageProfile"]
+                          : "";
+
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -75,7 +95,7 @@ class _MatchingListContactsScreenState
                               (context) => MatchingChatScreen(
                                 connexion: cursor,
                                 user: user,
-                                user_id: uniqueId,
+                                user_id: userId!,
                               ),
                         ),
                       );
@@ -83,7 +103,15 @@ class _MatchingListContactsScreenState
                     child: Card(
                       margin: const EdgeInsets.all(10),
                       child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.person)),
+                        leading:
+                            profileImagePath == ""
+                                ? const CircleAvatar(child: Icon(Icons.person))
+                                : CircleAvatar(
+                                  backgroundImage: NetworkImage(
+                                    profileImagePath,
+                                  ),
+                                ),
+                        // leading: const CircleAvatar(child: Icon(Icons.person)),
                         title: Text(
                           "${user['pseudo']}",
                           style: TextStyle(fontWeight: FontWeight.bold),

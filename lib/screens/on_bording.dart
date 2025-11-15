@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:projet_ia/services/users.dart';
-import 'package:projet_ia/providers/user_id_provider.dart';
+import 'package:projet_ia/providers/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:projet_ia/classes/user.dart';
@@ -18,6 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool isLoading = false;
   final UserService userService = UserService();
+  UserProvider userProvider = UserProvider();
 
   Widget buildIcon(IconData icon, Color bgColor) {
     return Container(
@@ -37,8 +38,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void createUser() async {
     // var userProvider = context.read<UserIdProvider>();
-    final prefs = await SharedPreferences.getInstance();
-
     setState(() {
       isLoading = true;
     });
@@ -48,10 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     print(response);
 
     if (response.length == 36) {
-      // UserIdProvider().setUserId(response);
-
-      await prefs.setString('onboarding_done', response);
-
+      userProvider.setUserId(response);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

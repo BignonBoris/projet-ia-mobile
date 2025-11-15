@@ -33,6 +33,8 @@ class _UserItemState extends State<UserItem> {
     final profileImagePath =
         user["profileImagePath"] != null
             ? user["profileImagePath"]
+            : user["imageProfile"] != null
+            ? user["imageProfile"]
             : user["user_info"] != null &&
                 user["user_info"]![0] != null &&
                 user["user_info"]![0]!["imageProfile"] != null

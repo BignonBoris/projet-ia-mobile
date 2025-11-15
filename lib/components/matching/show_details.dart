@@ -14,6 +14,17 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
       user['dateOfBirth'] != null
           ? "${calculateAge(user['dateOfBirth'])} ans"
           : "Non renseigné";
+
+  final profileImagePath =
+      user["profileImagePath"] != null
+          ? user["profileImagePath"]
+          : user["imageProfile"] != null
+          ? user["imageProfile"]
+          : user["user_info"] != null &&
+              user["user_info"]![0] != null &&
+              user["user_info"]![0]!["imageProfile"] != null
+          ? user["user_info"]![0]!["imageProfile"]
+          : "";
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -28,11 +39,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
             (_, controller) => AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.pinkAccent, Colors.purpleAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Colors.pinkAccent,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
               ),
               padding: const EdgeInsets.all(20),
@@ -52,17 +59,31 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const CircleAvatar(
-                        radius: 35,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, size: 40, color: Colors.pink),
+                      Container(
+                        child:
+                            profileImagePath == ""
+                                ? const CircleAvatar(
+                                  radius: 35,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color: Colors.pink,
+                                  ),
+                                )
+                                : CircleAvatar(
+                                  radius: 35,
+                                  backgroundImage: NetworkImage(
+                                    profileImagePath,
+                                  ),
+                                ),
                       ),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "${user['pseudo'] ?? 'Non renseigné'} • ${age}",
+                            "${user['pseudo'] ?? user['name'] ?? 'Non renseigné'} • ${age}",
                             style: const TextStyle(
                               fontSize: 22,
                               color: Colors.white,
@@ -70,7 +91,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                             ),
                           ),
                           Text(
-                            "${user['country'] ?? 'Non renseigné'}  • ${user['occupation']}",
+                            "${user['country'] ?? 'Non renseigné'} • ${user['sexe'] ?? 'Non renseigné'} • ${user['occupation'] ?? 'Non renseigné'}",
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white70,
@@ -98,6 +119,7 @@ void showUserDetailModal(BuildContext context, Map<String, dynamic> cursor) {
                       p: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ),
+                  const SizedBox(height: 8),
                   const Text(
                     "Votre compatibilité :",
                     style: TextStyle(

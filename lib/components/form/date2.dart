@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:projet_ia/components/form/input_decoration.dart";
 
 class DateInput extends StatefulWidget {
   final Function getDate;
@@ -55,12 +56,13 @@ class _DateInputState extends State<DateInput> {
         onTap: _pickBirthDate,
         child: AbsorbPointer(
           child: TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Date de naissance  (obligatoire)',
-              isDense: true,
-              border: const OutlineInputBorder(),
-              suffixIcon: const Icon(Icons.calendar_today),
-            ),
+            decoration: MyInputDecoration("Date de naissance  (obligatoire)"),
+            // decoration: InputDecoration(
+            //   labelText: 'Date de naissance  (obligatoire)',
+            //   isDense: true,
+            //   border: const OutlineInputBorder(),
+            //   suffixIcon: const Icon(Icons.calendar_today),
+            // ),
             controller: TextEditingController(
               text:
                   birthDate != null

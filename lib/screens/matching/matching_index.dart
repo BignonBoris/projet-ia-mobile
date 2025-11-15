@@ -57,7 +57,7 @@ class MatchingScreenState extends State<MatchingScreen> {
           }), // 👈 change à chaque valeur
           onGenerateRoute: (settings) {
             if (currentScreen == matchingFormScreen) {
-              return MaterialPageRoute(builder: (_) => MatchingFormScreen());
+              return MaterialPageRoute(builder: (_) => MatchingListScreen());
             } else if (currentScreen == matchingListScreen) {
               return MaterialPageRoute(builder: (_) => MatchingListScreen());
             } else if (!matchingOnBoardingCompleted) {
@@ -65,18 +65,14 @@ class MatchingScreenState extends State<MatchingScreen> {
             } else {
               return MaterialPageRoute(builder: (_) => MatchingListScreen());
             }
-
-            // switch (currentScreen) {
-            //   case matchingFormScreen:
-            //     return MaterialPageRoute(builder: (_) => MatchingFormScreen());
-            //   case matchingListScreen:
-            //     return MaterialPageRoute(builder: (_) => MatchingListScreen());
-            //   // case "CHAT":
-            //   //   return MaterialPageRoute(
-            //   //     builder: (_) => MatchingChatScreen("userName": "Truman"),
-            //   //   );
-            //   default:
-            //     return MaterialPageRoute(builder: (_) => MatchingIntroScreen());
+            // if (currentScreen == matchingFormScreen) {
+            //   return MaterialPageRoute(builder: (_) => MatchingFormScreen());
+            // } else if (currentScreen == matchingListScreen) {
+            //   return MaterialPageRoute(builder: (_) => MatchingListScreen());
+            // } else if (!matchingOnBoardingCompleted) {
+            //   return MaterialPageRoute(builder: (_) => MatchingIntroScreen());
+            // } else {
+            //   return MaterialPageRoute(builder: (_) => MatchingListScreen());
             // }
           },
         );

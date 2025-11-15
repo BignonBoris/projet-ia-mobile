@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/constants/values.dart';
 import 'package:projet_ia/screens/home.dart';
+import 'package:projet_ia/screens/matching/list.dart';
+import 'package:projet_ia/screens/matching/form.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/components/start.dart';
 import 'package:projet_ia/constants/texts.dart';
 import 'package:projet_ia/constants/values.dart';
+import 'package:projet_ia/services/matching.dart';
 import 'package:projet_ia/providers/menu_provider.dart';
 import 'package:projet_ia/providers/user_provider.dart';
 import "package:projet_ia/services/users.dart";
@@ -165,9 +167,11 @@ class MatchingIntroScreen extends StatelessWidget {
     if (checkUserProfilComplet(user)) {
       await menuProvider.completeMatchingOnboarding();
       menuProvider.setMatchingSelectScreen();
+      // await matchingFormKey.currentState?.init();
+      await IAMatchingService().initMatching(userId);
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MatchingFormScreen()),
+        MaterialPageRoute(builder: (context) => MatchingListScreen()),
       );
     } else {
       showProfileDialog(context);

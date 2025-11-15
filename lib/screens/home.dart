@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import 'package:projet_ia/data/menu.dart';
+import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'package:projet_ia/components/menu_bottom.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import "package:projet_ia/services/users.dart";
@@ -45,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (user != null) {
         await userProvider.setUserToProvider(user);
         _initFCM();
+        _initZego();
       }
     }
   }
@@ -52,6 +56,21 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     init();
+  }
+
+  void _initZego() async {
+    final int myAppID = 1977886184; // 🧠 ton AppID Zego
+    final String myAppSign =
+        "42d0d6b58922da0110ec158e17cfa9e3e8e0e072ace8e8842a017ce6111e3aaa";
+
+    /// Initialiser le service d’appel ZegoCloud
+    ZegoUIKitPrebuiltCallInvitationService().init(
+      appID: myAppID,
+      appSign: myAppSign,
+      userID: userId!, // ton identifiant utilisateur unique
+      userName: user!.pseudo ?? user!.name ?? Uuid().v4(),
+      plugins: [ZegoUIKitSignalingPlugin()],
+    );
   }
 
   Future<void> _initFCM() async {

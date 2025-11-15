@@ -9,6 +9,7 @@ import 'providers/user_id_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/menu_provider.dart';
+import 'providers/connexion_provider.dart';
 import 'package:projet_ia/screens/on_bording.dart';
 import "package:projet_ia/services/users.dart";
 import "package:projet_ia/classes/user.dart";
@@ -37,6 +38,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ConnexionProvider()),
         // ChangeNotifierProvider(create: (_) => UserIdProvider()..loadUserId()),
       ],
       child: MyApp(seenOnboarding: seenOnboarding),

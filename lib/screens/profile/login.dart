@@ -5,6 +5,7 @@ import 'package:projet_ia/providers/user_provider.dart';
 import "package:projet_ia/services/auth.dart";
 import "package:projet_ia/classes/auth.dart";
 import "package:projet_ia/screens/home.dart";
+import "package:projet_ia/components/form/text.dart";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,11 +54,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(selectedIndex: 2)),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
 
       // Navigator.pushReplacementNamed(context, '/home');
-    } else {}
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Echec de connexion.')));
+    }
   }
 
   @override
@@ -76,22 +81,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 40),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: "Email",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+
+                TextInput(controller: emailController, label: "Email"),
+                // TextField(
+                //   controller: emailController,
+                //   decoration: const InputDecoration(
+                //     labelText: "Email",
+                //     border: OutlineInputBorder(),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
-                TextField(
+                TextInput(
                   controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Mot de passe",
-                    border: OutlineInputBorder(),
-                  ),
+                  label: "Mot de passe",
+                  isPassword: true,
                 ),
+                // TextField(
+                //   controller: passwordController,
+                //   obscureText: true,
+                //   decoration: const InputDecoration(
+                //     labelText: "Mot de passe",
+                //     border: OutlineInputBorder(),
+                //   ),
+                // ),
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () => _login(context),
