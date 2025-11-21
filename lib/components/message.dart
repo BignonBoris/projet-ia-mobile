@@ -7,11 +7,13 @@ class Message extends StatefulWidget {
   final String role;
   final String message;
   final bool isTyping;
+  final String type;
   const Message({
     Key? key,
     required this.message,
     required this.role,
     this.isTyping = false,
+    this.type = "TEXT",
   }) : super(key: key);
 
   @override
@@ -64,25 +66,51 @@ class _MessageState extends State<Message> {
           //   width: 2,
           // ),
         ),
-        child: MarkdownBody(
-          data:
-              widget.isTyping
-                  ? widget.message
-                  : widget.message[0].toUpperCase() +
-                      widget.message.substring(1),
-          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-            p: TextStyle(
-              fontSize: isSystem ? 10 : 14,
-              color:
-                  isSystem
-                      ? Colors.black
-                      : isNotUser
-                      ? settingsProvider.aiMessageColor
-                      : settingsProvider
-                          .userMessageColor, // 👈 couleur choisie dans paramètres
-            ),
-          ),
-        ),
+        child:
+            widget.type == "IMAGE"
+                ? GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder:
+                          (_) => Dialog(
+                            backgroundColor: Colors.transparent,
+                            insetPadding: EdgeInsets.all(10),
+                            child: InteractiveViewer(
+                              child: Image.network(widget.message),
+                            ),
+                          ),
+                    );
+                  },
+                  child: FadeInImage(
+                    placeholder: AssetImage("assets/loading.gif"),
+                    image: NetworkImage(widget.message),
+                    fit: BoxFit.contain,
+                    width: 120,
+                    height: 120,
+                  ),
+                )
+                : MarkdownBody(
+                  data:
+                      widget.isTyping
+                          ? widget.message
+                          : widget.message[0].toUpperCase() +
+                              widget.message.substring(1),
+                  styleSheet: MarkdownStyleSheet.fromTheme(
+                    Theme.of(context),
+                  ).copyWith(
+                    p: TextStyle(
+                      fontSize: isSystem ? 10 : 14,
+                      color:
+                          isSystem
+                              ? Colors.black
+                              : isNotUser
+                              ? settingsProvider.aiMessageColor
+                              : settingsProvider
+                                  .userMessageColor, // 👈 couleur choisie dans paramètres
+                    ),
+                  ),
+                ),
       ),
     );
   }

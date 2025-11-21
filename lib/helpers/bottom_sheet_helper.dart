@@ -5,6 +5,7 @@ Future<T?> showAppBottomSheet<T>({
   required Widget child,
   bool isDismissible = true,
   bool enableDrag = true,
+  double height = 400,
 }) {
   return showModalBottomSheet<T>(
     context: context,
@@ -20,6 +21,7 @@ Future<T?> showAppBottomSheet<T>({
         expand: false,
         builder: (context, scrollController) {
           return Container(
+            height: height,
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
               color: Colors.white,

@@ -11,8 +11,6 @@ class ConnexionProvider with ChangeNotifier {
   List<dynamic> get connexions => _connexions;
 
   void setConnexions(List<dynamic> data) async {
-    print("data");
-    print(data);
     _connexions = data;
     notifyListeners();
   }

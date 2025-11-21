@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:projet_ia/data/error.dart';
 import "package:projet_ia/constants/url.dart";
@@ -145,6 +146,26 @@ class ConnexionService {
       return Error500;
     } catch (e) {
       return "Erreur: $e";
+    }
+  }
+
+  Future<void> sendFile(String connexionId, String userId, XFile image) async {
+    final uri = Uri.parse("$apiConnexion/message/upload-image/$connexionId");
+
+    print("uri = $uri");
+
+    var request = http.MultipartRequest("POST", uri);
+    request.fields['user_id'] = userId;
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      print("✅ Image envoyée avec succès !");
+      final respStr = await response.stream.bytesToString();
+      print(respStr);
+    } else {
+      print("❌ Erreur: ${response.statusCode}");
     }
   }
 }

@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:projet_ia/helpers/bottom_sheet_helper.dart';
+import 'package:projet_ia/helpers/show_image.dart';
+import "package:projet_ia/services/connexion.dart";
 import 'dart:io';
 
 class ChatMediaAction extends StatefulWidget {
-  const ChatMediaAction({super.key});
+  final String connexion_id;
+  final String user_id;
+  const ChatMediaAction({
+    super.key,
+    required this.connexion_id,
+    required this.user_id,
+  });
 
   @override
   State<ChatMediaAction> createState() => _ChatMediaActionState();
@@ -13,38 +21,59 @@ class ChatMediaAction extends StatefulWidget {
 class _ChatMediaActionState extends State<ChatMediaAction> {
   File? _mediaFile;
   final ImagePicker _picker = ImagePicker();
+  XFile? pickedFile; // (image ou vidéo)
+
+  void sendFile() async {
+    // final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      await ConnexionService().sendFile(
+        widget.connexion_id,
+        widget.user_id,
+        pickedFile!,
+      );
+    }
+  }
 
   // --- Ouvre la galerie (image ou vidéo)
   Future<void> _pickFromGallery() async {
     final XFile? file = await _picker.pickMedia(); // (image ou vidéo)
     if (file != null) {
-      setState(() => _mediaFile = File(file.path));
+      setState(() {
+        _mediaFile = File(file.path);
+        pickedFile = file;
+      });
       showAppBottomSheet(
         context: context,
-        child: Column(
-          children: [
-            // 👉 Affichage de l’image sélectionnée
-            if (file.mimeType?.startsWith("image") ?? true)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(file.path),
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            const SizedBox(height: 20),
-            Text("Fichier sélectionné : ${file.name}"),
-            const SizedBox(height: 20),
-            Row(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // ⚡ ne prend que la hauteur nécessaire
               children: [
-                ElevatedButton(onPressed: () {}, child: Text("Annuler")),
-                SizedBox(width: 10.0),
-                ElevatedButton(onPressed: () {}, child: Text("Envoyer")),
+                if (file.mimeType?.startsWith("image") ?? true)
+                  imagePreview(file),
+
+                const SizedBox(height: 20),
+
+                // Text("Fichier sélectionné : ${file.name}"),
+                // const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Annuler"),
+                    ),
+                    const SizedBox(width: 50),
+                    ElevatedButton(
+                      onPressed: () => sendFile(),
+                      child: const Text("Envoyer"),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       );
     }
@@ -111,15 +140,15 @@ class _ChatMediaActionState extends State<ChatMediaAction> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(2.0),
             child: IconButton(
               icon: Icon(Icons.photo_library),
               onPressed: _pickFromGallery,
             ),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 1),
           Padding(
-            padding: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(2.0),
             child: IconButton(
               icon: Icon(Icons.camera_alt),
               onPressed: _pickFromGallery,

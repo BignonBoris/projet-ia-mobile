@@ -12,6 +12,11 @@ import "package:projet_ia/classes/user.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
 import "package:projet_ia/screens/profile/menu.dart";
 
+import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:vibration/vibration.dart';
+import "package:projet_ia/screens/matching/incoming_call_screen.dart";
+
 class HomeScreen extends StatefulWidget {
   int selectedIndex = 2;
 
@@ -105,6 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
     // Gestion des notifications reçues en foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("📨 Message reçu en foreground: ${message.notification?.title}");
+      Navigator.push(
+        navigatorKey.currentContext!,
+        MaterialPageRoute(
+          builder:
+              (_) => IncomingCallScreen(
+                callId: "callId",
+                callerName: "callerName",
+              ),
+        ),
+      );
       setState(() {
         _message =
             "Message reçu : ${message.notification?.title} - ${message.notification?.body}";

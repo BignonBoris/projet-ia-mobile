@@ -10,14 +10,20 @@ import 'providers/settings_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/menu_provider.dart';
 import 'providers/connexion_provider.dart';
+import "providers/invitation_provider.dart";
 import 'package:projet_ia/screens/on_bording.dart';
 import "package:projet_ia/services/users.dart";
 import "package:projet_ia/classes/user.dart";
+// import 'package:projet_ia/incoming_call_screen.dart'; // ton écran appel
+// import 'package:projet_ia/services/notification_service.dart'; // optional
 
 // Fonction appelée quand une notification arrive en background
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // if (message.data["type"] == "incoming_call") {
+  //   NotificationService.showIncomingCall(message.data);
+  // }
   print("📩 Message reçu en background: ${message.messageId}");
 }
 
@@ -39,6 +45,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => ConnexionProvider()),
+        ChangeNotifierProvider(create: (_) => InvitationProvider()),
+
         // ChangeNotifierProvider(create: (_) => UserIdProvider()..loadUserId()),
       ],
       child: MyApp(seenOnboarding: seenOnboarding),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:projet_ia/services/matching.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet_ia/screens/matching/list_screen/matchs.dart';
 import 'package:projet_ia/screens/matching/list_screen/invitations.dart';
 import 'package:projet_ia/screens/matching/list_screen/messages.dart';
 import "package:projet_ia/constants/values.dart";
 import "package:projet_ia/services/connexion.dart";
+import "package:projet_ia/services/invitation.dart";
+import 'package:projet_ia/components/unread_message.dart';
+import "package:projet_ia/providers/invitation_provider.dart";
 
 //
 // 3️⃣ LIST SCREEN
@@ -29,8 +32,11 @@ class _MatchingListScreenState extends State<MatchingListScreen>
   bool isLoading = true;
 
   void init() async {
+    List<dynamic> invitations = [];
     final String? userId = await getPrefUserId();
     connexions = await ConnexionService().getAllUserConnexions(userId!);
+    invitations = await InvitationService().getAllInvitations(userId);
+    context.read<InvitationProvider>().setCount(invitations.length);
     setState(() {
       connexions = connexions;
       isLoading = false;
@@ -53,6 +59,8 @@ class _MatchingListScreenState extends State<MatchingListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final invitationProvider = context.watch<InvitationProvider>();
+
     return DefaultTabController(
       length: 3, // nombre d’onglets
       child: Scaffold(
@@ -68,7 +76,27 @@ class _MatchingListScreenState extends State<MatchingListScreen>
                 unselectedLabelColor: Colors.white70,
                 tabs: [
                   Tab(text: "Messages"),
-                  Tab(text: "Invitations"),
+                  invitationProvider.count == 0
+                      ? Tab(text: "Invitations")
+                      : Tab(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisSize:
+                                MainAxisSize
+                                    .min, // 👈 empêche le Row de s'étirer
+                            children: [
+                              Text("Invitations"),
+                              SizedBox(width: 20),
+                              SimpleBadge(
+                                count: invitationProvider.count,
+                                bgColor: Colors.white,
+                                textColor: Colors.redAccent,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   Tab(text: "Matchs"),
                 ],
               ),

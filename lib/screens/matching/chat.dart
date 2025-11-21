@@ -296,6 +296,7 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
               itemBuilder: (context, index) {
                 dynamic message = messages[index];
                 return Message(
+                  type: message['type'] ?? "TEXT",
                   message: message['message']!,
                   role:
                       message['user_id'] == widget.user_id
@@ -317,7 +318,10 @@ class _MatchingChatScreenState extends State<MatchingChatScreen> {
               ),
               child: Row(
                 children: [
-                  ChatMediaAction(),
+                  ChatMediaAction(
+                    connexion_id: widget.connexion["connexion_id"],
+                    user_id: widget.user_id,
+                  ),
                   Expanded(
                     child: TextField(
                       controller: controller,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:projet_ia/services/matching.dart';
 import 'package:projet_ia/services/invitation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import "package:provider/provider.dart";
 import 'package:projet_ia/classes/maching_guest_input.dart';
 import 'package:projet_ia/components/empty_list.dart';
 import 'package:projet_ia/components/toast.dart';
 // import './chat.dart';
 import "package:projet_ia/components/matching/show_details.dart";
+import "package:projet_ia/providers/invitation_provider.dart";
 import "package:projet_ia/utils.dart";
 import "package:projet_ia/components/matching/userItem.dart";
 import "package:projet_ia/constants/values.dart";
@@ -133,9 +134,14 @@ class _MatchingListMatchsScreenState extends State<MatchingListMatchsScreen> {
                                       ),
                                     );
                                 if (invitation_id.isNotEmpty) {
+                                  final invitationProvider =
+                                      context.read<InvitationProvider>();
                                   toastNotification(
                                     context,
                                     "Invitation envoyée 💌",
+                                  );
+                                  invitationProvider.setCount(
+                                    invitationProvider.count + 1,
                                   );
                                   setState(() {
                                     users.remove(cursor);
